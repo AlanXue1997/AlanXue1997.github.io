@@ -173,4 +173,6 @@ public class HelloWorld{
 }
 ```
 
+<div class="divider"></div>
+
 <script src="{{ site.baseurl }}/assets/prism.js" ></script>
