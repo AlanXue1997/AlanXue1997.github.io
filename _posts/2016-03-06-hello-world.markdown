@@ -142,7 +142,7 @@ int main()
 
 #### C++
 
-```c++
+```cpp
 #include<cstdio>
 #include<iostream>
 using namespace std;
