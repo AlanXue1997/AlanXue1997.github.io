@@ -17,7 +17,7 @@ timezone:           Asia/Kuala_Lumpur # https://en.wikipedia.org/wiki/List_of_tz
 
 # Site Build
 # highlighter:        pygments
-highlighter:        prism
+highlighter:        rouge
 #markdown:           redcarpet
 #redcarpet:
 #    extensions:     ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables", "with_toc_data", "highlight", "footnotes"]
