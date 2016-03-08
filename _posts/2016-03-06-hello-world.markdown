@@ -2,6 +2,10 @@
 title:  Hello World
 date:   2016-03-06 20:02
 ---
+
+<script src="{{ site.baseurl }}/assets/prism.js" ></script>
+
+
 ## 前言
 
 Hello World 已经几乎成了一种信仰。新学一门语言，如果不打出一个 Hello World，就会觉得少了点什么。拿起一本教材，如果书里没有Hello World，就会不自觉地鄙视作者。
@@ -174,3 +178,10 @@ public class HelloWorld{
 {% endprism %}
 
 <div class="divider"></div>
+
+
+<pre><code class="language-c">#include &lt;stdio.h>
+int main(void)
+{
+  	return 0;
+}</code></pre>
