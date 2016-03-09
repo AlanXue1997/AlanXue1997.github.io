@@ -178,10 +178,3 @@ public class HelloWorld{
 {% endprism %}
 
 <div class="divider"></div>
-
-
-<pre><code class="language-c">#include &lt;stdio.h>
-int main(void)
-{
-  	return 0;
-}</code></pre>
