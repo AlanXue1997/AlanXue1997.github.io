@@ -52,7 +52,7 @@ date:   2016-03-11 23:35
 
 方法跟上面半手工的方法是一样的，这学期在学java，所以就用java写了一个，可以实现字符串向图像/n值得转换，以及n值向图像的转换：
 
-{% prism java %}
+```java
 
 import java.util.*;
 import java.math.*;
@@ -186,8 +186,7 @@ public class Tupper{
     }
 }
 
-
-{% endprism %}
+```
 
 _注：代码中有“<>”注释的代码来自一个[帖子](http://bbs.csdn.net/topics/390594481)_
 
