@@ -23,7 +23,7 @@ Hello World 已经几乎成了一种信仰。新学一门语言，如果不打�
 
 当时是每周五下午放学去上课，至今还清楚的记得第一节课老师在黑板上写的不明觉厉的代码：
 
-{% prism pascal %}
+```pascal
 program name(input,output);
 const
   pi = 3.14;
@@ -33,7 +33,7 @@ begin
   readln(r);
   writeln(pi*r*r);
 end.
-{% endprism %}
+```
 
 第一节课老师就是从上至下的讲解了这一段代码。虽然听的很认真，但第一节课确实没有理解到底什么是常量，什么是变量。课后老师留的作业是（在纸上）写一个程序，输入长和宽，输出矩形的面积。
 
@@ -75,7 +75,7 @@ end.
 
 前两天觉得，每次打java都要在cmd里`javac xxx.java`然后再`java xxx`,太费劲了（其实就是懒癌晚期），于是我想到了批处理.bat，都是套路，上网查查呗，然后大家都说批处理神马的太过时了，还不如写个Python脚本。那我就听大家建议呗，看看Python怎么写，整了一下午，总算是整出来了一个暂时满足我要求的：
 
-{% prism python %}
+```python
 import sys
 import os
 name = ""
@@ -115,7 +115,7 @@ if(runn):
     print('运行结果：')
     os.system('java ' + name)
 
-{% endprism %}
+```
 
 <div class="divider"></div>
 
@@ -125,16 +125,16 @@ if(runn):
 
 #### Pascal
 
-{% prism pascal %}
+```pascal
 program HelloWorld(input,output);
 begin
   writeln('Hello World');
 end.
-{% endprism %}
+```
 
 #### C
 
-{% prism c %}
+```c
 #include<stdio.h> 
 
 int main()
@@ -142,11 +142,11 @@ int main()
   printf("Hello World\n");
   return 0;
 }
-{% endprism %}
+```
 
 #### C++
 
-{% prism cpp %}
+```cpp
 #include<cstdio>
 #include<iostream>
 using namespace std;
@@ -157,17 +157,17 @@ int main(void)
   return 0;
 }
 
-{% endprism %}
+```
 
 #### Python 3
 
-{% prism python %}
+```python
 print("Hello World")
-{% endprism %}
+```
 
 #### Java
 
-{% prism java %}
+```java
 import java.util.*;
 
 public class HelloWorld{
@@ -175,6 +175,6 @@ public class HelloWorld{
 		System.out.println("Hello World");
 	}
 }
-{% endprism %}
+```
 
 <div class="divider"></div>
