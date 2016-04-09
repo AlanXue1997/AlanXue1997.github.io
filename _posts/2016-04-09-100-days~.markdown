@@ -7,6 +7,7 @@ date:   2016-04-08 21:47
 <audio controls="controls" height="100" width="100">
   <source src="{{ site.baseurl }}/assets/record1.mp3" type="audio/mp3" />
   <source src="{{ site.baseurl }}/assets/record1.ogg" type="audio/ogg" />
+<embed height="100" width="100" src="{{ site.baseurl }}/assets/record1.mp3" type="audio/mp3" />
 </audio>
 </center>
 
