@@ -116,8 +116,6 @@ A矩阵的计算方法是在A[i,j]的点中，如果与(i,j)的[曼哈顿距离(
 
 求解线性方程组用的是[高斯消元法(**Gaussian elimination**)](https://en.wikipedia.org/wiki/Gaussian_elimination)，但只是理解了思想，所以写的应该是很不标准的(￣▽￣)"
 
-需要提一下的是，由于我们是在mod 4的条件下求整数解，所以在往下减的时候，不能粗暴的直接相除然后按比例减，那样会出现分数。我用了lcm（最小公倍数）来算，具体看程序（但后来发现完全没有必要嘛，直接a行乘b[i]，b行乘a[i]就好啦）。
-
 接下来是源码(Python3.4.3)
 
 ```python
@@ -126,6 +124,11 @@ def gcd(x, y):
 
 def lcm(x, y):
     return x*y//gcd(x,y)
+
+def show(a):
+    for i in a:
+        print(i)
+    print()
 
 #to create matrix A[x,y]
 def rule(width, height, x, y):
@@ -148,26 +151,22 @@ def gauss(a):
             m = lcm(a[i][i], a[j][i])
             n = m // a[j][i]
             m = m // a[i][i]
-            a[j] = [(a[j][x]*n-a[i][x]*m)%4 for x in range(len(a[i]))]
+            a[j] = [(a[j][x]*n-a[i][x]*m) for x in range(len(a[i]))]
+        show(a)
     for i in range(len(a)):
         a[i] = a[i][-2::-1] + [a[i][-1]]
     a = a[::-1]
     ans = []
     for i in range(len(a)):
         x = cal(a[i][i], a[i][-1])
-        if x == 4:
-            return []
-        ans.append(x)
+        ans.append(x%4)
         for j in range(i+1, len(a)):
-            a[j][-1] = (a[j][-1] - x*a[j][i]) % 4
+            a[j][-1] = (a[j][-1] - x*a[j][i])
     return ans[::-1]
 
 #a not standard method to calculate x[i]
 def cal(x, y):
-    for i in range(4):
-        if i*x % 4 == y:
-            return i
-    return 4
+    return 0 if x == 0 else y//x
 
 x = int(input('Input the width:'))
 y = int(input('Input the height:'))
