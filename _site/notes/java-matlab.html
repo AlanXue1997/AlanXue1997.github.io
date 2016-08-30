@@ -1,0 +1,189 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1" /><title>简单密码加密\解密——尝试Java调用MATLAB</title><meta name="twitter:card" content="summary" /><meta name="twitter:site" content="@XueZhonghao" /><meta name="twitter:title" content="简单密码加密\解密——尝试Java调用MATLAB" /><meta name="twitter:description" content="背景"><meta name="description" content="背景"><meta name="google-site-verification" content="epFgX0s_0RM3CdjwFcsewfXzPov2g8s9ZBOLyaIUH-o"><link rel="shortcut icon" href="/assets/totora.png"> <!--<link rel="icon" href="/assets/totora.png">--><link rel="apple-touch-icon" href="/assets/touch-icon.png"><link rel="stylesheet" href="//code.cdn.mozilla.net/fonts/fira.css"><link rel="stylesheet" href="/assets/core.css"><link rel="stylesheet" href="/assets/prism.css"><link rel="canonical" href="/notes/java-matlab"><link rel="alternate" type="application/atom+xml" title="AlanXue's blog" href="/feed.xml" /> <script> (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) })(window,document,'script','https://www.google-analytics.com/analytics.js','ga'); ga('create', 'UA-79196511-1', 'auto'); ga('send', 'pageview'); </script></head><body><aside class="logo"> <a href="/"> <img src="/assets/Totora2.png"> </a> <span class="logo-prompt">Back to Home</span></aside><!--src="http://www.gravatar.com/avatar/742cf6353760888dd24b7f22843cca55.png?s=80" class="gravatar" --><main> <noscript><style> article .footnotes { display: block; }</style></noscript><article><div class="center"><h1>简单密码加密\解密——尝试Java调用MATLAB</h1><time>August 27, 2016</time></div><div class="divider"></div><h1 id="section">背景</h1><p>今天突然设想出这样一个程序，它会随机出一个密码，并给出一个密钥。使用者使用这个密码（比如压缩文件的密码），但是只记住密钥，不记住密码。程序将设定一个特定的日期，在此日期之前密钥是无效的，此日期之后，程序将根据密钥给出密码。</p><p>简单的说，就是制造一个短时间内无法被得知的密码，在特定的日期才能被解开。</p><p>这个其实只是玩玩而已，所以想了一个很简单很简单的方法——矩阵乘法。程序中有一个<strong>固定的</strong>6×6的可逆矩阵M,具体的值是随机的；密码为6位，存储在一个1×6的矩阵A中；解锁日期也是6位（比如2016年8月27日，则为160827），存储在1×6的矩阵D中；密钥有12位，存储在一个1×12的矩阵key中，前六位是加密后的密码，后六位是加密后的解锁日期。它们之间有如下关系：</p><blockquote> <center> key=|A*M D*M| </center></blockquote><p>如果了解<a href="http://baike.baidu.com/link?url=_RigwzNOkF17D9cjiaAGAdT0SpwuYzY6Uw0dwiCWXkL_OVk0A6BhGB5oNGhOidBVPUIDbkT94HVnH_HCX3Rqeq">矩阵乘法</a>和<a href="http://baike.baidu.com/view/689609.htm">可逆矩阵</a>，就不难理解。举个例子:</p><p>M =</p><blockquote> <center> ｜７８１８６１｜<br /> ｜３５９９１９｜<br /> ｜９４７１４８｜<br /> ｜７９６０８８｜<br /> ｜６７７４６２｜<br /> ｜６０２０１７｜ </center></blockquote><p>A =</p><blockquote> <center> ｜１２３４５６｜ </center></blockquote><p>D =</p><blockquote> <center> ｜１６０８２７｜ </center></blockquote><p>则，key = |A*M D*M| =</p><blockquote> <center> 　｜０９４｜‘<br /> 　｜１３５｜<br /> 　｜１１０｜<br /> 　｜１３１｜<br /> 　｜０９９｜<br /> 　｜０５９｜<br /> 　｜１１０｜<br /> 　｜１１８｜<br /> 　｜１５９｜<br /> 　｜１７１｜<br /> 　｜１５０｜<br /> 　｜０７１｜ </center></blockquote><p>由于在解密的时候需要计算M<sup>-1</sup>，也就是求矩阵的逆（其实可以一开始就求好，存着就行，但我是后来才发现的(-__-)!）。Andrew老师总是强调说，<strong>不要自己写算法</strong>，除非你是数值计算的专家。于是我就想，java里面有没有算矩阵的库？百度了一下，应该是有的，网上有对应的库，但不太统一。</p><p>突然想起来，我似乎从来没有试过在一个程序中使用两种或以上的语言，那这次不妨试试用matlab算矩阵，剩下的逻辑和界面用java来写。</p><div class="divider"></div><h1 id="section-1">实现</h1><h3 id="matlab">Matlab部分</h3><p>首先，需要写出加密和解密的两个函数：</p><div class="highlighter-rouge"><pre class="highlight"><code><span class="k">function</span> <span class="n">code</span> <span class="o">=</span> <span class="n">Encrypt</span><span class="p">(</span><span class="n">encryptMatrix</span><span class="p">,</span> <span class="n">passwd</span><span class="p">)</span>
+<span class="n">code</span> <span class="o">=</span> <span class="n">passwd</span><span class="o">*</span><span class="n">encryptMatrix</span><span class="p">;</span>
+</code></pre></div><p>△这个函数的作用是计算A*M和D/*M</p><div class="highlighter-rouge"><pre class="highlight"><code><span class="k">function</span> <span class="n">passwd</span> <span class="o">=</span> <span class="n">Decrypt</span><span class="p">(</span><span class="n">encryptMatrix</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
+<span class="n">passwd</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">code</span><span class="o">*</span><span class="nb">pinv</span><span class="p">(</span><span class="n">encryptMatrix</span><span class="p">));</span>
+</code></pre></div><p>△这个函数的作用是通过key的前六位或后六位，逆推A和D</p><p>接下来才是重点，以上两个函数都存在于.m文件中，java是无法调用的，所以需要生成为jar包，让java可以在代码中直接使用。</p><p>笔者使用的是MATLAB R2014a 8.3.0.532，java 1.7.0_79。</p><p>生成jar包的步骤如下：</p><ul><li><p>在MATLAB命令行窗口中进入存放jar包的文件夹</p></li><li><p>在MATLAB的命令行窗口中输入<code class="highlighter-rouge">deplyotool</code>以打开MATLAB Compiler，选择<strong>Library Compiler</strong></p></li><li><p>MATLAB Compile的左上角，APPLICATION TYPE选择<strong>Java Package</strong>，在EXPORTED FUNCTIONS中添加两个函数对应的.m文件</p></li><li><p>填写Application Information信息，修改类名</p></li><li><p>点击右上角的Package就会生成一个文件夹，里面可以找到jar包。</p></li></ul><h3 id="java">Java部分</h3><p>Java中，比较关键的问题是，Encrypt/Decrypt这两个函数在Java里究竟长什么样子，又该如何使用？</p><p>首先是引用包，需要引用的包有两个，第一个就是刚刚生成的jar包，第二个是<strong>javabuilder.jar</strong>，它存在于Matlab安装目录/toolbox/javabuilder/jar/……，32位和64位略有不同，请正确选择。</p><p>之后，看看两个函数的样子，如果打开文档，会看到Encrypt的Decrypt都有三种用法。这里我只选用了最好理解的一种：</p><div class="highlighter-rouge"><pre class="highlight"><code>public void Decrypt(java.lang.Object[] lhs,
+           java.lang.Object[] rhs)
+             throws com.mathworks.toolbox.javabuilder.MWException
+
+Provides the interface for calling the Decrypt M-function where the first input, an Object array, receives the output of the M-function and the second input, also an Object array, provides the input to the M-function.
+
+参数:
+    lhs - array in which to return outputs. Number of outputs (nargout) is determined by allocated size of this array. Outputs are returned as sub-classes of com.mathworks.toolbox.javabuilder.MWArray. Each output array should be freed by calling its dispose() method.
+    rhs - array containing inputs. Number of inputs (nargin) is determined by the allocated size of this array. Input arguments may be passed as sub-classes of com.mathworks.toolbox.javabuilder.MWArray, or as arrays of any supported Java type. Arguments passed as Java types are converted to MATLAB arrays according to default conversion rules.
+抛出:
+    com.mathworks.toolbox.javabuilder.MWException - An error has occurred during the function call.
+</code></pre></div><p>这种方法，输入时两个Object[]，lhs是返回值，rhs是输入值，调用时，只需将矩阵按顺序放在rhs中，调用完后，从lhs中就可以取出返回的矩阵。</p><p>还有一个问题是，Java中如何表示Matlab的矩阵？</p><p>这需要用到javabuilder中的MWNumericArray类，用法如下：</p><div class="highlighter-rouge"><pre class="highlight"><code><span class="kt">int</span><span class="o">[]</span> <span class="n">dims</span> <span class="o">=</span> <span class="o">{</span><span class="mi">6</span><span class="o">,</span> <span class="mi">6</span><span class="o">};</span>
+<span class="kt">int</span><span class="o">[]</span> <span class="n">data</span> <span class="o">=</span> <span class="o">{</span>
+			<span class="mi">7</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span>
+			<span class="mi">3</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="mi">9</span><span class="o">,</span> <span class="mi">9</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">9</span><span class="o">,</span>
+			<span class="mi">9</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span>
+			<span class="mi">7</span><span class="o">,</span> <span class="mi">9</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span>
+			<span class="mi">6</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span>
+			<span class="mi">6</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">7</span><span class="o">};</span>
+<span class="n">MWNumericArray</span> <span class="n">A</span> <span class="o">=</span> <span class="n">MWNumericArray</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="n">dims</span><span class="o">,</span> <span class="n">data</span><span class="o">,</span> <span class="n">MWClassID</span><span class="o">.</span><span class="na">DOUBLE</span><span class="o">);</span>
+</code></pre></div><p>至此，比较棘手的问题就都解决了。下面介绍一种通过网络获取日期的方法。</p><div class="highlighter-rouge"><pre class="highlight"><code>try{
+	URL url = new URL(webUrl);
+	URLConnection uc = url.openConnection();
+	uc.connect();
+	long ld = uc.getDate();
+	Date date = new Date(ld);
+	SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd", Locale.CHINA);
+	String nowDate = sdf.format(date);
+}
+catch(MalformedURLException e){
+	e.printStackTrace();
+}
+catch(IOException e){
+	e.printStackTrace();
+}
+</code></pre></div><p>其中webUrl是任意的一个网站，“http://www.baidu.com”就可以。</p><p>接下来，给出一个可以运行的代码，已经实现了newPasswd（不完全，没有添加日期）、getPasswd、getDate等方法，但没有编写交互关系。</p><div class="highlighter-rouge"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.net.MalformedURLException</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.net.URL</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.net.URLConnection</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.text.SimpleDateFormat</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Date</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Locale</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.mathworks.toolbox.javabuilder.MWClassID</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.mathworks.toolbox.javabuilder.MWNumericArray</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">EncryptToolForRen.EncryptTool</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+	
+	<span class="kd">private</span> <span class="kd">static</span> <span class="kt">int</span> <span class="n">date</span><span class="o">;</span>
+	<span class="kd">private</span> <span class="kd">static</span> <span class="n">EncryptTool</span> <span class="n">encryptTool</span><span class="o">;</span>
+	<span class="kd">private</span> <span class="kd">static</span> <span class="n">MWNumericArray</span> <span class="n">M</span><span class="o">;</span>
+	
+	<span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="n">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">){</span>
+		<span class="n">init</span><span class="o">();</span>
+		<span class="kt">int</span><span class="o">[]</span> <span class="n">passwd</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="mi">6</span><span class="o">];</span>
+		<span class="kt">int</span><span class="o">[]</span> <span class="n">key</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="mi">12</span><span class="o">];</span>
+		<span class="n">newPasswd</span><span class="o">(</span><span class="n">passwd</span><span class="o">,</span> <span class="n">key</span><span class="o">);</span>
+		<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="nl">i:</span> <span class="n">key</span><span class="o">){</span>
+			<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">"%03d "</span><span class="o">,</span> <span class="n">i</span><span class="o">);</span>
+		<span class="o">}</span>
+		<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">();</span>
+		<span class="k">if</span><span class="o">(</span><span class="n">getPasswd</span><span class="o">(</span><span class="n">passwd</span><span class="o">,</span> <span class="n">key</span><span class="o">)){</span>
+			<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="nl">i:</span> <span class="n">passwd</span><span class="o">){</span>
+				<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+			<span class="o">}</span>
+		<span class="o">}</span>
+	<span class="o">}</span>
+	
+	<span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="n">init</span><span class="o">(){</span>
+		<span class="n">date</span> <span class="o">=</span> <span class="n">Integer</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">getDate</span><span class="o">(</span><span class="s">"http://www.baidu.com"</span><span class="o">));</span>
+		<span class="k">try</span><span class="o">{</span>
+			<span class="n">encryptTool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">EncryptTool</span><span class="o">();</span>
+		<span class="o">}</span>
+		<span class="k">catch</span><span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">){</span>
+			<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+			<span class="k">return</span><span class="o">;</span>
+		<span class="o">}</span>
+		<span class="kt">int</span><span class="o">[]</span> <span class="n">dataDims</span> <span class="o">=</span> <span class="o">{</span><span class="mi">6</span><span class="o">,</span> <span class="mi">6</span><span class="o">};</span>
+		<span class="kt">int</span><span class="o">[]</span> <span class="n">data</span> <span class="o">=</span> <span class="o">{</span>
+				<span class="mi">7</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span>
+				<span class="mi">3</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="mi">9</span><span class="o">,</span> <span class="mi">9</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">9</span><span class="o">,</span>
+				<span class="mi">9</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span>
+				<span class="mi">7</span><span class="o">,</span> <span class="mi">9</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span>
+				<span class="mi">6</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span>
+				<span class="mi">6</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">7</span><span class="o">};</span>
+		<span class="n">M</span> <span class="o">=</span> <span class="n">MWNumericArray</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="n">dataDims</span><span class="o">,</span> <span class="n">data</span><span class="o">,</span> <span class="n">MWClassID</span><span class="o">.</span><span class="na">DOUBLE</span><span class="o">);</span>
+	<span class="o">}</span>
+	
+	<span class="kd">private</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="n">getPasswd</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">passwd</span><span class="o">,</span> <span class="kt">int</span><span class="o">[]</span> <span class="n">key</span><span class="o">){</span>
+		<span class="kt">int</span><span class="o">[]</span> <span class="n">keyDate</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="mi">6</span><span class="o">];</span>
+		<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span> <span class="n">keyDate</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">key</span><span class="o">[</span><span class="n">i</span><span class="o">+</span><span class="mi">6</span><span class="o">];</span>
+		<span class="kt">int</span><span class="o">[]</span> <span class="n">dims</span> <span class="o">=</span> <span class="o">{</span><span class="mi">1</span><span class="o">,</span> <span class="mi">6</span><span class="o">};</span>
+		<span class="n">MWNumericArray</span> <span class="n">A</span> <span class="o">=</span> <span class="n">MWNumericArray</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="n">dims</span><span class="o">,</span> <span class="n">keyDate</span><span class="o">,</span> <span class="n">MWClassID</span><span class="o">.</span><span class="na">DOUBLE</span><span class="o">);</span>
+		<span class="n">Object</span><span class="o">[]</span> <span class="n">objects</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="mi">2</span><span class="o">];</span>
+		<span class="n">Object</span><span class="o">[]</span> <span class="n">ans</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="mi">1</span><span class="o">];</span>
+		<span class="n">objects</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="n">M</span><span class="o">;</span>
+		<span class="n">objects</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">A</span><span class="o">;</span>
+		<span class="k">try</span><span class="o">{</span>
+			<span class="n">encryptTool</span><span class="o">.</span><span class="na">Decrypt</span><span class="o">(</span><span class="n">ans</span><span class="o">,</span> <span class="n">objects</span><span class="o">);</span>
+			<span class="n">String</span><span class="o">[]</span> <span class="n">strings</span> <span class="o">=</span> <span class="n">ans</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">toString</span><span class="o">().</span><span class="na">split</span><span class="o">(</span><span class="s">" "</span><span class="o">);</span>
+			<span class="kt">int</span> <span class="n">nowDate</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+			<span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="nl">st:</span> <span class="n">strings</span><span class="o">){</span>
+				<span class="k">if</span><span class="o">(</span><span class="n">st</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">""</span><span class="o">))</span> <span class="k">continue</span><span class="o">;</span>
+				<span class="n">nowDate</span> <span class="o">=</span> <span class="n">nowDate</span><span class="o">/</span><span class="mi">10</span> <span class="o">+</span> <span class="n">Integer</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">st</span><span class="o">)*</span><span class="mi">100000</span><span class="o">;</span>
+			<span class="o">}</span>
+			<span class="k">if</span><span class="o">(</span><span class="n">nowDate</span> <span class="o">&gt;</span> <span class="n">date</span><span class="o">){</span>
+				<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">"Sorry, this password is invisible until 20%d.%d.%d"</span><span class="o">,</span> <span class="n">nowDate</span><span class="o">/</span><span class="mi">10000</span><span class="o">,</span> <span class="n">nowDate</span><span class="o">/</span><span class="mi">100</span><span class="o">%</span><span class="mi">100</span><span class="o">,</span> <span class="n">nowDate</span><span class="o">%</span><span class="mi">100</span><span class="o">);</span>
+				<span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+			<span class="o">}</span>
+			<span class="n">A</span> <span class="o">=</span> <span class="n">MWNumericArray</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="n">dims</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">MWClassID</span><span class="o">.</span><span class="na">DOUBLE</span><span class="o">);</span>
+			<span class="n">objects</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">A</span><span class="o">;</span>
+			<span class="n">encryptTool</span><span class="o">.</span><span class="na">Decrypt</span><span class="o">(</span><span class="n">ans</span><span class="o">,</span> <span class="n">objects</span><span class="o">);</span>
+			<span class="n">strings</span> <span class="o">=</span> <span class="n">ans</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">toString</span><span class="o">().</span><span class="na">split</span><span class="o">(</span><span class="s">" "</span><span class="o">);</span>
+			<span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+			<span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="nl">st:</span> <span class="n">strings</span><span class="o">){</span>
+				<span class="k">if</span><span class="o">(</span><span class="n">st</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">""</span><span class="o">))</span> <span class="k">continue</span><span class="o">;</span>
+				<span class="n">passwd</span><span class="o">[</span><span class="n">i</span><span class="o">++]</span> <span class="o">=</span> <span class="n">Integer</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">st</span><span class="o">);</span>
+			<span class="o">}</span>
+			<span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+		<span class="o">}</span>
+		<span class="k">catch</span><span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">){</span>
+			<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+			<span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+		<span class="o">}</span>
+	<span class="o">}</span>
+
+	<span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="n">newPasswd</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">passwd</span><span class="o">,</span> <span class="kt">int</span><span class="o">[]</span> <span class="n">key</span><span class="o">){</span>
+		<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span> <span class="n">passwd</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">;</span><span class="c1">//(int)(10 * Math.random());</span>
+		<span class="kt">int</span><span class="o">[]</span> <span class="n">dims</span> <span class="o">=</span> <span class="o">{</span><span class="mi">1</span><span class="o">,</span> <span class="mi">6</span><span class="o">};</span>
+		<span class="n">MWNumericArray</span> <span class="n">A</span> <span class="o">=</span> <span class="n">MWNumericArray</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="n">dims</span><span class="o">,</span> <span class="n">passwd</span><span class="o">,</span> <span class="n">MWClassID</span><span class="o">.</span><span class="na">DOUBLE</span><span class="o">);</span>
+		<span class="n">Object</span><span class="o">[]</span> <span class="n">objects</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="mi">2</span><span class="o">];</span>
+		<span class="n">Object</span><span class="o">[]</span> <span class="n">ans</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="mi">1</span><span class="o">];</span>
+		<span class="n">objects</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="n">M</span><span class="o">;</span>
+		<span class="n">objects</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">A</span><span class="o">;</span>
+		<span class="k">try</span><span class="o">{</span>
+			<span class="n">encryptTool</span><span class="o">.</span><span class="na">Encrypt</span><span class="o">(</span><span class="n">ans</span><span class="o">,</span> <span class="n">objects</span><span class="o">);</span>
+			<span class="n">String</span><span class="o">[]</span> <span class="n">strings</span> <span class="o">=</span> <span class="n">ans</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">toString</span><span class="o">().</span><span class="na">split</span><span class="o">(</span><span class="s">" "</span><span class="o">);</span>
+			<span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+			<span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="nl">st:</span> <span class="n">strings</span><span class="o">){</span>
+				<span class="k">if</span><span class="o">(</span><span class="n">st</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">""</span><span class="o">))</span> <span class="k">continue</span><span class="o">;</span>
+				<span class="n">key</span><span class="o">[</span><span class="n">i</span><span class="o">++]</span> <span class="o">=</span> <span class="n">Integer</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">st</span><span class="o">);</span>
+			<span class="o">}</span>
+			<span class="kt">int</span> <span class="n">now</span> <span class="o">=</span> <span class="mi">160827</span><span class="o">;</span><span class="c1">//date;</span>
+			<span class="kt">int</span><span class="o">[]</span> <span class="n">nowDate</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="mi">6</span><span class="o">];</span>
+			<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="o">;</span> <span class="o">++</span><span class="n">j</span><span class="o">){</span>
+				<span class="n">nowDate</span><span class="o">[</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="n">now</span> <span class="o">%</span> <span class="mi">10</span><span class="o">;</span>
+				<span class="n">now</span> <span class="o">/=</span> <span class="mi">10</span><span class="o">;</span>
+			<span class="o">}</span>
+			<span class="n">A</span> <span class="o">=</span> <span class="n">MWNumericArray</span><span class="o">.</span><span class="na">newInstance</span><span class="o">(</span><span class="n">dims</span><span class="o">,</span> <span class="n">nowDate</span><span class="o">,</span> <span class="n">MWClassID</span><span class="o">.</span><span class="na">DOUBLE</span><span class="o">);</span>
+			<span class="n">objects</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">A</span><span class="o">;</span>
+			<span class="n">encryptTool</span><span class="o">.</span><span class="na">Encrypt</span><span class="o">(</span><span class="n">ans</span><span class="o">,</span> <span class="n">objects</span><span class="o">);</span>
+			<span class="n">strings</span> <span class="o">=</span> <span class="n">ans</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">toString</span><span class="o">().</span><span class="na">split</span><span class="o">(</span><span class="s">" "</span><span class="o">);</span>
+			<span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="nl">st:</span> <span class="n">strings</span><span class="o">){</span>
+				<span class="k">if</span><span class="o">(</span><span class="n">st</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">""</span><span class="o">))</span> <span class="k">continue</span><span class="o">;</span>
+				<span class="n">key</span><span class="o">[</span><span class="n">i</span><span class="o">++]</span> <span class="o">=</span> <span class="n">Integer</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">st</span><span class="o">);</span>
+			<span class="o">}</span>
+		<span class="o">}</span>
+		<span class="k">catch</span><span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">){</span>
+			<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+		<span class="o">}</span>
+	<span class="o">}</span>
+	
+	<span class="kd">private</span> <span class="kd">static</span> <span class="n">String</span> <span class="n">getDate</span><span class="o">(</span><span class="n">String</span> <span class="n">webUrl</span><span class="o">){</span>
+		<span class="k">try</span><span class="o">{</span>
+			<span class="n">URL</span> <span class="n">url</span> <span class="o">=</span> <span class="k">new</span> <span class="n">URL</span><span class="o">(</span><span class="n">webUrl</span><span class="o">);</span>
+			<span class="n">URLConnection</span> <span class="n">uc</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">();</span>
+			<span class="n">uc</span><span class="o">.</span><span class="na">connect</span><span class="o">();</span>
+			<span class="kt">long</span> <span class="n">ld</span> <span class="o">=</span> <span class="n">uc</span><span class="o">.</span><span class="na">getDate</span><span class="o">();</span>
+			<span class="n">Date</span> <span class="n">date</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Date</span><span class="o">(</span><span class="n">ld</span><span class="o">);</span>
+			<span class="n">SimpleDateFormat</span> <span class="n">sdf</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SimpleDateFormat</span><span class="o">(</span><span class="s">"yyMMdd"</span><span class="o">,</span> <span class="n">Locale</span><span class="o">.</span><span class="na">CHINA</span><span class="o">);</span>
+			<span class="k">return</span> <span class="n">sdf</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="n">date</span><span class="o">);</span>
+		<span class="o">}</span>
+		<span class="k">catch</span><span class="o">(</span><span class="n">MalformedURLException</span> <span class="n">e</span><span class="o">){</span>
+			<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+		<span class="o">}</span>
+		<span class="k">catch</span><span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">){</span>
+			<span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+		<span class="o">}</span>
+		<span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></div><div class="divider"></div><h1 id="section-2">问题</h1><h3 id="matlab-1">Matlab部分</h3><h5 id="library-compileruntitled1">1.选择Library Compiler后，弹出“无法保存工程Untitled1。您可能没有相应权限……”</h5><p>出现这种错误，说明你没有权限修改MATLAB当前所处的文件夹（界面左侧的当前文件夹，或者输入pwd查看）。此时应该回到上一步，重新选择一个存放jar包的文件夹。</p><h5 id="packageerror-during-package">2.点击Package后，出现Error during package</h5><p>点击Open log file，里面如果有“matlab Test checkout of feature ‘Compiler’ failed”，那说明你正在使用的Matlab破解不完全，提供一个<a href="http://blog.sina.com.cn/s/blog_4a189c920102w3hx.html">解决链接</a>。如果错误信息不同，请自行百度或谷歌。</p><h3 id="java-1">Java部分</h3><h5 id="mtimes--times--times-">3.出现“错误使用 *。MTIMES 不完全支持整数类。至少有一个输入必须为标量。要按元素进行 TIMES 计算，请改用 TIMES (.*)。”</h5><p>出现这种错误，你可能在生成矩阵时使用了MWClassID.INT32或MWClassID.INT64等。将其改成MWClassID.DOUBLE即可解决。</p><div class="divider"></div></article><div class="back"> <a href="/">Back</a></div></main></body></html>
