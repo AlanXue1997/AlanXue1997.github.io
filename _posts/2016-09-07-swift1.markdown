@@ -1,0 +1,171 @@
+---
+title:  Swift初次尝试
+date:   2016-09-08 16:58
+---
+
+<script src="{{ site.baseurl }}/assets/prism.js" ></script>
+
+最近开始学习IOS开发，先看了看Swift的一些基础知识，写了一个计算汉诺塔的小程序。还是经典的递归算法，算是递归的入门程序了。
+
+```swift
+let N = 3
+
+var x: Int = 0
+
+var A: [Int] = []
+var B: [Int] = []
+var C: [Int] = []
+
+for i in 1...N{
+    A.append(i)
+    B.append(0)
+    C.append(0)
+}
+
+A.append(-1)
+B.append(-1)
+C.append(-1)
+
+func show(){
+    println("[\(x++)]")
+    for i in 0...N-1{
+        for k in [A[i], B[i], C[i]]{
+            for var j=1; j<=N-k; ++j{
+                print(" ")
+            }
+            for var j=1; j<=k; ++j{
+                print("-")
+            }
+            if k == 0{
+                print("|")
+            }
+            else{
+                print("+")
+            }
+            for var j=1; j<=k; ++j{
+                print("-")
+            }
+            for var j=1; j<=N-k; ++j{
+                print(" ")
+            }
+            print("  ")
+        }
+        println()
+    }
+    for _ in 1...6*N+7{
+        print("-")
+    }
+    println()
+}
+
+func move(a: Character, c: Character){
+    var p: Int
+    var i = 0
+    
+    switch a{
+    case "a":
+        while A[i] == 0{
+            i++
+        }
+        p = A[i]
+        A[i] = 0
+    case "b":
+        while B[i] == 0{
+            i++
+        }
+        p = B[i]
+        B[i] = 0
+    default:
+        while C[i] == 0{
+            i++
+        }
+        p = C[i]
+        C[i] = 0
+    }
+    i = 0
+    switch c{
+    case "a":
+        while A[i] == 0{
+            i++
+        }
+        A[i-1] = p
+    case "b":
+        while B[i] == 0{
+            i++
+        }
+        B[i-1] = p
+    default:
+        while C[i] == 0{
+            i++
+        }
+        C[i-1] = p
+    }
+    show()
+}
+
+func moveAtoC(a: Character, b: Character, c: Character, n: Int){
+    if n == 1{
+        move(a, c)
+    }
+    else{
+        moveAtoC(a, c, b, n-1)
+        move(a, c)
+        moveAtoC(b, a, c, n-1)
+    }
+}
+
+show()
+moveAtoC("a", "b", "c", N)
+
+```
+
+改变N的值，即可得到不同的结果。当N=3时，输出如下：
+
+```
+[0]
+  -+-       |        |     
+ --+--      |        |     
+---+---     |        |     
+-------------------------
+[1]
+   |        |        |     
+ --+--      |        |     
+---+---     |       -+-    
+-------------------------
+[2]
+   |        |        |     
+   |        |        |     
+---+---   --+--     -+-    
+-------------------------
+[3]
+   |        |        |     
+   |       -+-       |     
+---+---   --+--      |     
+-------------------------
+[4]
+   |        |        |     
+   |       -+-       |     
+   |      --+--   ---+---  
+-------------------------
+[5]
+   |        |        |     
+   |        |        |     
+  -+-     --+--   ---+---  
+-------------------------
+[6]
+   |        |        |     
+   |        |      --+--   
+  -+-       |     ---+---  
+-------------------------
+[7]
+   |        |       -+-    
+   |        |      --+--   
+   |        |     ---+---  
+-------------------------
+```
+
+现在还没有感受到Swift在语法方面的一些改变到底有什么用意，内部的东西应该是比较新的技术。
+
+学到现在，感受到语言的发展跟硬件的发展是想关联的，从最开始学习16位的Pascal，到现在学习64位的Swift，感觉这些语言越来越不拘小节，就比如Array，里面有很多参数，而且还必须是可变长度的。它应该已经不是简单的队列了，现在的新语言恐怕已经不需要自己去写那些简单的数据结构比如链表这样的结构了。
+
+<div class="divider"></div>

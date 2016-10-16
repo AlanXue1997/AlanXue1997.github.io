@@ -1,0 +1,94 @@
+<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1" /><title>汇编初次尝试</title><meta name="twitter:card" content="summary" /><meta name="twitter:site" content="@XueZhonghao" /><meta name="twitter:title" content="汇编初次尝试" /><meta name="twitter:description" content=""><meta name="description" content=""><meta name="google-site-verification" content="epFgX0s_0RM3CdjwFcsewfXzPov2g8s9ZBOLyaIUH-o"><link rel="shortcut icon" href="/assets/totora.png"> <!--<link rel="icon" href="/assets/totora.png">--><link rel="apple-touch-icon" href="/assets/touch-icon.png"><link rel="stylesheet" href="//code.cdn.mozilla.net/fonts/fira.css"><link rel="stylesheet" href="/assets/core.css"><link rel="stylesheet" href="/assets/prism.css"><link rel="canonical" href="/notes/masm1"><link rel="alternate" type="application/atom+xml" title="AlanXue's blog" href="/feed.xml" /> <script> (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) })(window,document,'script','https://www.google-analytics.com/analytics.js','ga'); ga('create', 'UA-79196511-1', 'auto'); ga('send', 'pageview'); </script></head><body><aside class="logo"> <a href="/"> <img src="/assets/Totora2.png"> </a> <span class="logo-prompt">Back to Home</span></aside><!--src="http://www.gravatar.com/avatar/742cf6353760888dd24b7f22843cca55.png?s=80" class="gravatar" --><main> <noscript><style> article .footnotes { display: block; }</style></noscript><article><div class="center"><h1>汇编初次尝试</h1><time>October 15, 2016</time></div><div class="divider"></div><script src="/assets/prism.js"></script><h1 id="section">前言</h1><p>以前接触语言的顺序是Pascal→C→java/Python→MATLAB，是越来越先进的语言，这是第一次倒过来，学了更加底层的汇编。</p><p>学更高级的语言，总是能发现很多事情更加方便了，写代码的速度提高了不少，许多细节都不需要自己去考虑，但是损失了一定的性能。</p><p>这次学了个底层的汇编，最大的感觉就是总能恍然大悟，原来是这个样子啊。比如不管是C还是java，都有++和–操作，在汇编里就对应着INC和DEC；明白了CPU内部究竟是如何工作的；程序是如何知道一段内存是int还是double等。</p><p>开始的时候真的是一脸懵逼啊。</p><p>这跟平时学语言的套路不一样啊。</p><p>没有for、while循环，不讲if语句，上来直接一大套寄存器，感觉智力受到了嘲讽。</p><div class="divider"></div><h1 id="section-1">尝试</h1><p>上节课老师给演示了一下对一个数组去绝对值，终于知道汇编的循环怎么写了，赶紧回来就试着写了个<a href="https://zh.wikipedia.org/zh-cn/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F">冒泡排序</a>。</p><h3 id="section-2">思路</h3><p><a href="https://zh.wikipedia.org/zh-cn/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F">冒泡排序</a>的思路还是很简单粗暴的，如果看维基百科实在是理解不了，可以看看这个视频——<a href="http://v.youku.com/v_show/id_XMzMyOTAyMzQ0.html?from=s1.8-1-1.2&amp;spm=a2h0k.8191407.0.0">舞动的排序算法</a>，非常有创意，两个人在原地跳舞表示不交换，走出来跳舞表示交换。但视频中有一点小错误，就是第一次循环时，a[8]和a[9]都转身了，实际上应该只有a[9]转身。</p><h3 id="section-3">汇编实现</h3><table><thead><tr><th style="text-align: center">寄存器</th><th>作用</th></tr></thead><tbody><tr><td style="text-align: center">EBX</td><td>数组第一个元素的地址</td></tr><tr><td style="text-align: center">ECX</td><td>循环计数器，表示这是倒数第几次循环，等于1时是最后一次</td></tr><tr><td style="text-align: center">ESI</td><td>记录下标，相当于c语言中常用的i，j</td></tr><tr><td style="text-align: center">EAX</td><td>在比较/交换两个数时使用</td></tr></tbody></table><p>排序部分的步骤如下</p><div class="highlighter-rouge"><pre class="highlight"><code>	ECX = COUNT-1  		;需要循环COUNT-1次
+	ESI = 0          	;
+MP1:				;开始第一层循环
+	将ECX、ESI压栈		;使第二层循环不影响第一层的参数
+	ECX' = COUNT-ESI-1	;需要循环COUNT-ESI-1次
+	ESI' = 0		;
+MP2:				;开始第二层循环
+	EAX = A[ESI']		;
+	比较A[ESI'+1]和EAX	;
+	如果负，跳转MPJ		;
+	交换A[ESI']和A[ESI'+1]	;
+MPJ:				;
+	ESI++			;
+	LOOP MP2		;
+				;
+	将EXC、ESI从栈中提出	;注意后进先出
+	ESI++			;
+	LOOP MP1		;
+</code></pre></div><h3 id="section-4">代码</h3><p>ASM32.INC</p><pre><code class="language-masm">.386
+.MODEL FLAT, STDCALL
+.STACK 1024
+
+OPTION casemap : none
+
+INCLUDELIB "D:\...\MSVCRT.LIB";需要换成自己的地址
+
+chr$ MACRO any_text : VARARG
+LOCAL txtname
+.data
+txtname db any_text, 0
+align 4
+.code
+EXITM &lt;OFFSET txtname&gt;
+ENDM
+
+printf		PROTO C : DWORD, : VARARG
+scanf		PROTO C : DWORD, : VARARG
+getchar		PROTO C
+ExitProcess PROTO : DWORD
+</code></pre><p>*.asm</p><pre><code class="language-masm">INCLUDE	ASM32.INC
+
+COUNT=5;改成需要排序的数字的个数
+
+.DATA
+	A	SDWORD	COUNT DUP(?)
+.CODE
+	main PROC	
+		LEA		EBX,A
+		MOV		ECX,COUNT 
+		MOV		ESI,0
+	L1: PUSH	ECX 
+		INVOKE	scanf,chr$("%d"),ADDR[EBX+ESI*4]
+		POP		ECX
+		INC		ESI
+		LOOP	L1 
+
+		LEA		EBX,A
+		MOV		ECX,COUNT-1
+		MOV		ESI,0
+	MP1:PUSH	ECX
+		PUSH	ESI 
+		
+		MOV		ECX,COUNT-1
+		SUB		ECX,ESI
+		MOV		ESI,0
+	MP2:MOV		EAX,[EBX+ESI*4]
+		CMP		[EBX+ESI*4+4],EAX
+		JNS		MPJ 
+		XCHG	EAX,[EBX+ESI*4+4]
+		MOV		[EBX+ESI*4],EAX
+		MOV		[EBX+ESI*4],EAX
+	MPJ:INC		ESI
+		LOOP	MP2 
+
+		POP		ESI
+		POP		ECX
+		INC		ESI
+		LOOP	MP1
+		
+
+		LEA		EBX,A
+		MOV		ECX,COUNT 
+		MOV		ESI,0
+	L2:	PUSH	ECX 
+		INVOKE	printf,chr$("%d "),DWORD PTR [EBX+ESI*4]
+		POP		ECX
+		INC		ESI
+		LOOP	L2
+
+		INVOKE  ExitProcess,0
+	main ENDP
+
+END main
+</code></pre><div class="divider"></div></article><div class="back"> <a href="/">Back</a></div></main></body></html>

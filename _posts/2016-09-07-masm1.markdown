@@ -1,0 +1,152 @@
+---
+title:  汇编初次尝试
+date:   2016-10-15 13:28
+---
+
+<script src="{{ site.baseurl }}/assets/prism.js" ></script>
+
+# 前言
+
+以前接触语言的顺序是Pascal→C→java/Python→MATLAB，是越来越先进的语言，这是第一次倒过来，学了更加底层的汇编。
+
+学更高级的语言，总是能发现很多事情更加方便了，写代码的速度提高了不少，许多细节都不需要自己去考虑，但是损失了一定的性能。
+
+这次学了个底层的汇编，最大的感觉就是总能恍然大悟，原来是这个样子啊。比如不管是C还是java，都有++和--操作，在汇编里就对应着INC和DEC；明白了CPU内部究竟是如何工作的；程序是如何知道一段内存是int还是double等。
+
+开始的时候真的是一脸懵逼啊。
+
+这跟平时学语言的套路不一样啊。
+
+没有for、while循环，不讲if语句，上来直接一大套寄存器，感觉智力受到了嘲讽。
+
+<div class="divider"></div>
+
+# 尝试
+
+上节课老师给演示了一下对一个数组去绝对值，终于知道汇编的循环怎么写了，赶紧回来就试着写了个[冒泡排序](https://zh.wikipedia.org/zh-cn/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F)。
+
+### 思路
+
+[冒泡排序](https://zh.wikipedia.org/zh-cn/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F)的思路还是很简单粗暴的，如果看维基百科实在是理解不了，可以看看这个视频——[舞动的排序算法](http://v.youku.com/v_show/id_XMzMyOTAyMzQ0.html?from=s1.8-1-1.2&spm=a2h0k.8191407.0.0)，非常有创意，两个人在原地跳舞表示不交换，走出来跳舞表示交换。但视频中有一点小错误，就是第一次循环时，a[8]和a[9]都转身了，实际上应该只有a[9]转身。
+
+### 汇编实现
+
+|寄存器|作用|
+|:---:|---------|
+|EBX|数组第一个元素的地址|
+|ECX|循环计数器，表示这是倒数第几次循环，等于1时是最后一次|
+|ESI|记录下标，相当于c语言中常用的i，j|
+|EAX|在比较/交换两个数时使用|
+
+排序部分的步骤如下
+
+```
+	ECX = COUNT-1  		;需要循环COUNT-1次
+	ESI = 0          	;
+MP1:				;开始第一层循环
+	将ECX、ESI压栈		;使第二层循环不影响第一层的参数
+	ECX' = COUNT-ESI-1	;需要循环COUNT-ESI-1次
+	ESI' = 0		;
+MP2:				;开始第二层循环
+	EAX = A[ESI']		;
+	比较A[ESI'+1]和EAX	;
+	如果负，跳转MPJ		;
+	交换A[ESI']和A[ESI'+1]	;
+MPJ:				;
+	ESI++			;
+	LOOP MP2		;
+				;
+	将EXC、ESI从栈中提出	;注意后进先出
+	ESI++			;
+	LOOP MP1		;
+```
+
+
+### 代码
+
+ASM32.INC
+
+```masm
+.386
+.MODEL FLAT, STDCALL
+.STACK 1024
+
+OPTION casemap : none
+
+INCLUDELIB "D:\...\MSVCRT.LIB";需要换成自己的地址
+
+chr$ MACRO any_text : VARARG
+LOCAL txtname
+.data
+txtname db any_text, 0
+align 4
+.code
+EXITM <OFFSET txtname>
+ENDM
+
+printf		PROTO C : DWORD, : VARARG
+scanf		PROTO C : DWORD, : VARARG
+getchar		PROTO C
+ExitProcess PROTO : DWORD
+```
+
+*.asm
+
+```masm
+INCLUDE	ASM32.INC
+
+COUNT=5;改成需要排序的数字的个数
+
+.DATA
+	A	SDWORD	COUNT DUP(?)
+.CODE
+	main PROC	
+		LEA		EBX,A
+		MOV		ECX,COUNT 
+		MOV		ESI,0
+	L1: PUSH	ECX 
+		INVOKE	scanf,chr$("%d"),ADDR[EBX+ESI*4]
+		POP		ECX
+		INC		ESI
+		LOOP	L1 
+
+		LEA		EBX,A
+		MOV		ECX,COUNT-1
+		MOV		ESI,0
+	MP1:PUSH	ECX
+		PUSH	ESI 
+		
+		MOV		ECX,COUNT-1
+		SUB		ECX,ESI
+		MOV		ESI,0
+	MP2:MOV		EAX,[EBX+ESI*4]
+		CMP		[EBX+ESI*4+4],EAX
+		JNS		MPJ 
+		XCHG	EAX,[EBX+ESI*4+4]
+		MOV		[EBX+ESI*4],EAX
+		MOV		[EBX+ESI*4],EAX
+	MPJ:INC		ESI
+		LOOP	MP2 
+
+		POP		ESI
+		POP		ECX
+		INC		ESI
+		LOOP	MP1
+		
+
+		LEA		EBX,A
+		MOV		ECX,COUNT 
+		MOV		ESI,0
+	L2:	PUSH	ECX 
+		INVOKE	printf,chr$("%d "),DWORD PTR [EBX+ESI*4]
+		POP		ECX
+		INC		ESI
+		LOOP	L2
+
+		INVOKE  ExitProcess,0
+	main ENDP
+
+END main
+```
+
+<div class="divider"></div>

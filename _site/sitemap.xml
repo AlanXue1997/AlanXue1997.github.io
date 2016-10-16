@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>/notes/masm1</loc>
+<lastmod>2016-10-15T13:28:00+00:00</lastmod>
+</url>
+<url>
+<loc>/notes/swift1</loc>
+<lastmod>2016-09-08T16:58:00+00:00</lastmod>
+</url>
+<url>
 <loc>/notes/java-matlab</loc>
 <lastmod>2016-08-27T01:22:00+00:00</lastmod>
 </url>
@@ -23,14 +31,6 @@
 <url>
 <loc>/notes/moon-legend</loc>
 <lastmod>2016-05-02T21:47:00+00:00</lastmod>
-</url>
-<url>
-<loc>/notes/LQQ-birthday</loc>
-<lastmod>2016-04-19T23:15:00+00:00</lastmod>
-</url>
-<url>
-<loc>/notes/100-days~</loc>
-<lastmod>2016-04-08T21:47:00+00:00</lastmod>
 </url>
 <url>
 <loc>/notes/Java-tupper</loc>
