@@ -1,0 +1,87 @@
+<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1" /><title>汇编实现汉诺塔</title><meta name="twitter:card" content="summary" /><meta name="twitter:site" content="@XueZhonghao" /><meta name="twitter:title" content="汇编实现汉诺塔" /><meta name="twitter:description" content=""><meta name="description" content=""><meta name="google-site-verification" content="epFgX0s_0RM3CdjwFcsewfXzPov2g8s9ZBOLyaIUH-o"><link rel="shortcut icon" href="/assets/totora.png"> <!--<link rel="icon" href="/assets/totora.png">--><link rel="apple-touch-icon" href="/assets/touch-icon.png"><link rel="stylesheet" href="//code.cdn.mozilla.net/fonts/fira.css"><link rel="stylesheet" href="/assets/core.css"><link rel="stylesheet" href="/assets/prism.css"><link rel="canonical" href="/notes/masm2"><link rel="alternate" type="application/atom+xml" title="AlanXue's blog" href="/feed.xml" /> <script> (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) })(window,document,'script','https://www.google-analytics.com/analytics.js','ga'); ga('create', 'UA-79196511-1', 'auto'); ga('send', 'pageview'); </script></head><body><aside class="logo"> <a href="/"> <img src="/assets/Totora2.png"> </a> <span class="logo-prompt">Back to Home</span></aside><!--src="http://www.gravatar.com/avatar/742cf6353760888dd24b7f22843cca55.png?s=80" class="gravatar" --><main> <noscript><style> article .footnotes { display: block; }</style></noscript><article><div class="center"><h1>汇编实现汉诺塔</h1><time>October 22, 2016</time></div><div class="divider"></div><script src="/assets/prism.js"></script><h1 id="section">前言</h1><p>通常学一门新语言，都是先写一个汉诺塔熟悉这种语言的函数时如何构造的。</p><p>但汇编学了很久都没有学到过程，所以初次尝试只是写了个冒泡排序。</p><p>上节课老师终于讲了一下如何写PROC，CALL，在试了几个简单的类似两个整数相加这样的函数之后，果断开始尝试用汇编写汉诺塔。</p><div class="divider"></div><h1 id="section-1">实现</h1><h3 id="section-2">思路</h3><p>思路就是普通的C语言中递归实现汉诺塔，只需要写出递归函数即可</p><div class="highlighter-rouge"><pre class="highlight"><code><span class="c1">//han函数能够将A柱子最上面的k个盘子借助B移动到C
+</span><span class="kt">void</span> <span class="n">han</span><span class="p">(</span><span class="kt">char</span> <span class="n">A</span><span class="p">,</span> <span class="kt">char</span> <span class="n">B</span><span class="p">,</span> <span class="kt">char</span> <span class="n">C</span><span class="p">,</span> <span class="kt">int</span> <span class="n">k</span><span class="p">){</span>
+	<span class="c1">//如果只需要移动一次，直接移动即可
+</span>    <span class="k">if</span><span class="p">(</span><span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">){</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">"%c -&gt; %c</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">);</span>
+	<span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+	<span class="c1">//先将k-1个盘子借助C移动到B
+</span>    <span class="n">han</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+	<span class="c1">//将剩下的一个移动到C
+</span>    <span class="n">printf</span><span class="p">(</span><span class="s">"%c -&gt; %c</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">);</span>
+	<span class="c1">//将刚才移动到B的k-1个盘子借助A移动到C
+</span>    <span class="n">han</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+    <span class="k">return</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div><h3 id="section-3">汇编实现</h3><p>选择了EAX来存储k，其实挺麻烦的，因为c语言的函数printf回改变EAX，还需要push</p><p>主要说一下栈相关的内容</p><p>比如说第一次调用为<code class="highlighter-rouge">han('A', 'B', 'C', 3)</code></p><p>汇编写法</p><pre><code class="language-masm">PUSH 	3
+PUSH 	'C'
+PUSH 	'B'
+PUSH 	'A'
+CALL 	HAN
+</code></pre><p>此时栈中内容为</p><table><thead><tr><th>地址</th><th style="text-align: center">含义</th><th style="text-align: center">内容</th></tr></thead><tbody><tr><td>···</td><td style="text-align: center">···</td><td style="text-align: center">···</td></tr><tr><td>ESP</td><td style="text-align: center">返回值</td><td style="text-align: center">-</td></tr><tr><td>ESP+4</td><td style="text-align: center">A</td><td style="text-align: center">41 00 00 00</td></tr><tr><td>ESP+8</td><td style="text-align: center">B</td><td style="text-align: center">42 00 00 00</td></tr><tr><td>ESP+12</td><td style="text-align: center">C</td><td style="text-align: center">43 00 00 00</td></tr><tr><td>ESP+16</td><td style="text-align: center">k</td><td style="text-align: center">03 00 00 00</td></tr><tr><td>···</td><td style="text-align: center">···</td><td style="text-align: center">···</td></tr></tbody></table><p>为了避免递归调用时改变EAX的值，所以需要<code class="highlighter-rouge">PUSH EAX</code>，而<code class="highlighter-rouge">PUSH EBP</code>的原因不记得官方说法了，我知道的好处是这样写在调用参数的时候地址偏移是常数，算得快。</p><p>这时栈中内容变为</p><table><thead><tr><th>地址</th><th style="text-align: center">含义</th><th style="text-align: center">内容</th></tr></thead><tbody><tr><td>···</td><td style="text-align: center">···</td><td style="text-align: center">···</td></tr><tr><td>ESP</td><td style="text-align: center">上一个EBP</td><td style="text-align: center">-</td></tr><tr><td>ESP+4</td><td style="text-align: center">上一个EAX</td><td style="text-align: center">-</td></tr><tr><td>ESP+8</td><td style="text-align: center">返回值</td><td style="text-align: center">-</td></tr><tr><td>ESP+12</td><td style="text-align: center">A</td><td style="text-align: center">41 00 00 00</td></tr><tr><td>ESP+16</td><td style="text-align: center">B</td><td style="text-align: center">42 00 00 00</td></tr><tr><td>ESP+20</td><td style="text-align: center">C</td><td style="text-align: center">43 00 00 00</td></tr><tr><td>ESP+24</td><td style="text-align: center">k</td><td style="text-align: center">03 00 00 00</td></tr><tr><td>···</td><td style="text-align: center">···</td><td style="text-align: center">···</td></tr></tbody></table><p>此时<code class="highlighter-rouge">MOV EBP,ESP</code>，这样在之后代码中，如果需要用到A、B、C、k，就可以直接写<code class="highlighter-rouge">[EBP+12]</code>一类的了。</p><p>关键就是需要理解汇编的过程（函数）时怎么个运行方式，之后写起来感觉跟c语言没什么区别，需要提醒一下C语言函数会改变EAX,ECX,EDX，而han过程中用到了EAX，所以在调用printf之前一定要<code class="highlighter-rouge">PUSH EAX</code>。</p><h3 id="section-4">代码</h3><p>ASM32.INC</p><pre><code class="language-masm">.386
+.MODEL FLAT, STDCALL
+.STACK 1024
+
+OPTION casemap : none
+
+INCLUDELIB "D:\...\MSVCRT.LIB";需要换成自己的地址
+
+chr$ MACRO any_text : VARARG
+LOCAL txtname
+.data
+txtname db any_text, 0
+align 4
+.code
+EXITM &lt;OFFSET txtname&gt;
+ENDM
+
+printf		PROTO C : DWORD, : VARARG
+scanf		PROTO C : DWORD, : VARARG
+getchar		PROTO C
+ExitProcess PROTO : DWORD
+</code></pre><p>*.asm</p><pre><code class="language-masm">INCLUDE	ASM32.INC
+
+.CODE
+HAN PROC
+	PUSH	EAX
+	PUSH	EBP
+	MOV		EBP,ESP
+
+	MOV		EAX,[EBP+24]
+	DEC		EAX
+	JNZ		CO
+	PUSH	EAX
+	INVOKE	printf,chr$("%c -&gt; %c", 0DH, 0AH), DWORD PTR [EBP+12], DWORD PTR [EBP+20]
+	POP		EAX
+	JMP		EN
+CO:	PUSH	EAX
+	PUSH	[EBP+16]
+	PUSH	[EBP+20]
+	PUSH	[EBP+12]
+	CALL	HAN
+	PUSH	EAX
+	INVOKE	printf, chr$("%c -&gt; %c", 0DH, 0AH), DWORD PTR[EBP+12], DWORD PTR[EBP+20]
+	POP		EAX
+	PUSH	EAX
+	PUSH[EBP + 20]
+	PUSH[EBP + 12]
+	PUSH[EBP + 16]
+	CALL	HAN
+
+EN:	POP		EBP
+	POP		EAX
+	RET		16
+HAN ENDP
+
+MAIN PROC
+	PUSH	3
+	PUSH	'C'
+	PUSH	'B'
+	PUSH	'A'
+	CALL	HAN
+
+	INVOKE  ExitProcess, 0
+	MAIN ENDP
+	END MAIN
+</code></pre><div class="divider"></div></article><div class="back"> <a href="/">Back</a></div></main></body></html>

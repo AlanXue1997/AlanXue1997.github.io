@@ -1,0 +1,171 @@
+---
+title:  汇编实现汉诺塔
+date:   2016-10-22 13:28
+---
+
+<script src="{{ site.baseurl }}/assets/prism.js" ></script>
+
+# 前言
+
+通常学一门新语言，都是先写一个汉诺塔熟悉这种语言的函数时如何构造的。
+
+但汇编学了很久都没有学到过程，所以初次尝试只是写了个冒泡排序。
+
+上节课老师终于讲了一下如何写PROC，CALL，在试了几个简单的类似两个整数相加这样的函数之后，果断开始尝试用汇编写汉诺塔。
+
+<div class="divider"></div>
+
+# 实现
+
+### 思路
+
+思路就是普通的C语言中递归实现汉诺塔，只需要写出递归函数即可
+
+```c
+//han函数能够将A柱子最上面的k个盘子借助B移动到C
+void han(char A, char B, char C, int k){
+	//如果只需要移动一次，直接移动即可
+    if(k == 1){
+	printf("%c -> %c\n", A, C);
+	return;
+    }
+	//先将k-1个盘子借助C移动到B
+    han(A, C, B, k-1);
+	//将剩下的一个移动到C
+    printf("%c -> %c\n", A, C);
+	//将刚才移动到B的k-1个盘子借助A移动到C
+    han(B, A, C, k-1);
+    return;
+}
+
+```
+
+### 汇编实现
+
+选择了EAX来存储k，其实挺麻烦的，因为c语言的函数printf回改变EAX，还需要push
+
+主要说一下栈相关的内容
+
+比如说第一次调用为```han('A', 'B', 'C', 3)```
+
+汇编写法
+
+```masm
+PUSH 	3
+PUSH 	'C'
+PUSH 	'B'
+PUSH 	'A'
+CALL 	HAN
+```
+
+此时栈中内容为
+
+|地址|含义|内容|
+|---|:----:|:------:|
+|···|···|···|
+|ESP|返回值|-|
+|ESP+4|A|41 00 00 00|
+|ESP+8|B|42 00 00 00|
+|ESP+12|C|43 00 00 00|
+|ESP+16|k|03 00 00 00|
+|···|···|···|
+
+为了避免递归调用时改变EAX的值，所以需要```PUSH EAX```，而```PUSH EBP```的原因不记得官方说法了，我知道的好处是这样写在调用参数的时候地址偏移是常数，算得快。
+
+这时栈中内容变为
+
+|地址|含义|内容|
+|---|:----:|:------:|
+|···|···|···|
+|ESP|上一个EBP|-|
+|ESP+4|上一个EAX|-|
+|ESP+8|返回值|-|
+|ESP+12|A|41 00 00 00|
+|ESP+16|B|42 00 00 00|
+|ESP+20|C|43 00 00 00|
+|ESP+24|k|03 00 00 00|
+|···|···|···|
+
+此时```MOV 	EBP,ESP```，这样在之后代码中，如果需要用到A、B、C、k，就可以直接写```[EBP+12]```一类的了。
+
+关键就是需要理解汇编的过程（函数）时怎么个运行方式，之后写起来感觉跟c语言没什么区别，需要提醒一下C语言函数会改变EAX,ECX,EDX，而han过程中用到了EAX，所以在调用printf之前一定要```PUSH EAX```。
+
+
+### 代码
+
+ASM32.INC
+
+```masm
+.386
+.MODEL FLAT, STDCALL
+.STACK 1024
+
+OPTION casemap : none
+
+INCLUDELIB "D:\...\MSVCRT.LIB";需要换成自己的地址
+
+chr$ MACRO any_text : VARARG
+LOCAL txtname
+.data
+txtname db any_text, 0
+align 4
+.code
+EXITM <OFFSET txtname>
+ENDM
+
+printf		PROTO C : DWORD, : VARARG
+scanf		PROTO C : DWORD, : VARARG
+getchar		PROTO C
+ExitProcess PROTO : DWORD
+```
+
+*.asm
+
+```masm
+INCLUDE	ASM32.INC
+
+.CODE
+HAN PROC
+	PUSH	EAX
+	PUSH	EBP
+	MOV		EBP,ESP
+
+	MOV		EAX,[EBP+24]
+	DEC		EAX
+	JNZ		CO
+	PUSH	EAX
+	INVOKE	printf,chr$("%c -> %c", 0DH, 0AH), DWORD PTR [EBP+12], DWORD PTR [EBP+20]
+	POP		EAX
+	JMP		EN
+CO:	PUSH	EAX
+	PUSH	[EBP+16]
+	PUSH	[EBP+20]
+	PUSH	[EBP+12]
+	CALL	HAN
+	PUSH	EAX
+	INVOKE	printf, chr$("%c -> %c", 0DH, 0AH), DWORD PTR[EBP+12], DWORD PTR[EBP+20]
+	POP		EAX
+	PUSH	EAX
+	PUSH[EBP + 20]
+	PUSH[EBP + 12]
+	PUSH[EBP + 16]
+	CALL	HAN
+
+EN:	POP		EBP
+	POP		EAX
+	RET		16
+HAN ENDP
+
+MAIN PROC
+	PUSH	3
+	PUSH	'C'
+	PUSH	'B'
+	PUSH	'A'
+	CALL	HAN
+
+	INVOKE  ExitProcess, 0
+	MAIN ENDP
+	END MAIN
+```
+
+<div class="divider"></div>

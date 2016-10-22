@@ -9,7 +9,7 @@ title: About
 
 Hello!
 
-I'm a student of HIT(Harbin Institute of Technology), studying computer science in School of Computer Science and Technology.
+I'm a student from HIT(Harbin Institute of Technology), major in computer science and technology.
 
 <img src="{{ site.baseurl }}/assets/github.png" width="20" height="20">
 [AlanXue1997](https://github.com/AlanXue1997)
