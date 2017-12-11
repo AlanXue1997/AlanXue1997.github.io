@@ -1,0 +1,101 @@
+---
+title:  RT-Thread && Linux 双核双系统
+date:   2017-12-10 20:01
+---
+
+## 前言
+
+本篇文章的内容极有可能全部来自视频[RT-Thread 2015 嵌入式沙龙 深圳站](http://video.tudou.com/v/XMjM5ODE2NDY0OA==.html?qq-pf-to=pcqq.c2c)，这是软件设计实验课上老师提供的一个选择。做着做着，越来越觉得，这个项目的意义其实并不在于学习操作系统的相关知识并解决一些创新性的问题，而是破译上述视频。因为那个视频质量及其粗糙，但却是几乎唯一的资料，所以本篇文章主要记录破译后的过程。
+
+## 实验一：双核双系统
+
+环境配置||
+--|--|
+系统：|ubuntu 16.10
+
+### Git操作
+
+视频上给出的那个不是很清楚的网址是[https://coding.net/u/RT-Thread/p/Gemini/git](https://coding.net/u/RT-Thread/p/Gemini/git)，打开后操作和GitHub差不多，注册账户，然后Fork。
+
+视频中的WebIDE变了一个位置：
+
+<img src="{{ site.baseurl }}/assets/rt-thread-0.png" />
+
+如果按照视频中的做法直接用webIDE进行操作的话，会发生存储空间满的问题，因为免费账户只有128M的空间，但实际上需要的空间有3、4个G的样子，根本不够。
+
+所以，直接点webIDE旁边的下载，下载安装包就好了。解压的时候，位置又是一个坑。视频中特别提到了env.sh的内容：
+
+	
+```
+# toolchains script
+export PATH=/home/coding/workspace/arm-2012.09/bin:$PATH
+export RTT_ROOT=/home/coding/workspace/rt-thread
+export RTT_CC=gcc
+export RTT_EXEC_PATH=/home/coding/workspace/arm-2012.09/bin
+# export KDIR=/home/coding/workspace/linux-3.18.16
+export KDIR=/home/coding/workspace/buildroot-2015.05/output/build/linux-custom
+export PATH=/home/coding/workspace/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabi/bin:$PATH
+export CROSS_COMPILE=arm-linux-gnueabi-
+export ARCH=arm
+export MO_DIR=/home/coding/workspace/buildroot-2015.05/output/target/root
+```
+
+需要注意的是这里面的coding实际上是用户名，在ubuntu里直接是看不到的，比如我的用户名是alanxue，所以workspace的路径是```/home/alanxue/workspace```，但在资源管理器中看到的却是
+
+<img src="{{ site.baseurl }}/assets/rt-thread-1.png" />
+
+正确的路径应该用pwd命令来查看
+
+<img src="{{ site.baseurl }}/assets/rt-thread-2.png" />
+
+如果不想麻烦（我在这里失败了四五次，因为不懂里面的内容，每次都是重新配置，下载，特别麻烦），可以按照我最终的方式安装：
+
+1.打开下载的压缩文件
+2.将里面的文件夹解压到Home位置（注意，不是home，Home的实际位置为home/你的用户名）
+3.将解压出来的文件夹重命名为workspace
+
+<img src="{{ site.baseurl }}/assets/rt-thread-2.png" />
+
+4.修改workspace文件夹里面的env.sh的内容，将所有的coding替换为你的用户名（可以用pwd查看用户名是什么，例如我就修改成alanxue），我的修改后为：
+
+```
+# toolchains script
+export PATH=/home/alanxue/workspace/arm-2012.09/bin:$PATH
+export RTT_ROOT=/home/alanxue/workspace/rt-thread
+export RTT_CC=gcc
+export RTT_EXEC_PATH=/home/alanxue/workspace/arm-2012.09/bin
+
+# export KDIR=/home/coding/workspace/linux-3.18.16
+export KDIR=/home/alanxue/workspace/buildroot-2015.05/output/build/linux-custom
+export PATH=/home/alanxue/workspace/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabi/bin:$PATH
+export CROSS_COMPILE=arm-linux-gnueabi-
+export ARCH=arm
+export MO_DIR=/home/alanxue/workspace/buildroot-2015.05/output/target/root
+```
+
+至此，git相关的内容结束。
+
+## 执行三个.sh
+
+三个文件的执行顺序是：
+
+```sh ./prepar.sh```
+
+这个文件将会下载rt-thread以及Linux系统，可能还有其他的。
+
+```source ./env.sh```
+
+这里使用的必须是修改后的env.sh。
+
+```sh ./build.sh```
+
+这一步比较关键，如果在build.sh的执行过程中出现了大量的文件不存在、找不到路径这样的错误，那就是在上一步出了问题：env.sh中的路径与解压出来的路径没有对应上。如果出现了这样的问题，我的解决方法是从头再来。
+
+build执行成功之后，在boot和vexpress两个文件夹中都应该有.elf文件。
+
+## 运行rt-thread系统
+
+视频中这里的步骤极其不清晰。
+
+视频中打开的那个文件夹是vexpress，下载下来并替换的那个是rtthread-vexpress.elf，而那个bat批处理文件（就是视频中打开看了一眼但什么都看不清的那个）对应的是vexpress文件夹中的qemu.sh，可以复制出来运行，也可以直接```sh ./qemu.sh```
+
