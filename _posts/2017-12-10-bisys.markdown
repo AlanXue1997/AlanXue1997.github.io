@@ -79,7 +79,7 @@ export MO_DIR=/home/alanxue/workspace/buildroot-2015.05/output/target/root
 
 三个文件的执行顺序是：
 
-```sh ./prepar.sh```
+```sh ./prepare.sh```
 
 这个文件将会下载rt-thread以及Linux系统，可能还有其他的。
 
