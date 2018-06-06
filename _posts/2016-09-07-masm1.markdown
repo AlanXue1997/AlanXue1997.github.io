@@ -2,6 +2,7 @@
 layout: article
 title: 汇编初次尝试
 mathjax: true
+key: 2016-09-07-masm1
 ---
 
 以前接触语言的顺序是Pascal→C→java/Python→MATLAB，是越来越先进的语言，这是第一次倒过来，学了更加底层的汇编。

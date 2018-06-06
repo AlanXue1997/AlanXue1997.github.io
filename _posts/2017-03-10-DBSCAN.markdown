@@ -3,6 +3,7 @@ layout: article
 title: DBSCAN
 mathjax: true
 tags: 机器学习 C++
+key: 2017-03-10-DBSCAN
 ---
 
 参加了老师的一个项目，要搞劣质数据对机器学习算法的影响，我负责实现[DBSCAN算法](https://zh.wikipedia.org/wiki/DBSCAN)。

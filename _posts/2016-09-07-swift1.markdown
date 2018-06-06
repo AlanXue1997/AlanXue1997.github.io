@@ -2,6 +2,7 @@
 layout: article
 title: Swift初次尝试
 mathjax: true
+key: 2016-09-07-swift1
 ---
 
 最近开始学习IOS开发，先看了看Swift的一些基础知识，写了一个计算汉诺塔的小程序。还是经典的递归算法，算是递归的入门程序了。

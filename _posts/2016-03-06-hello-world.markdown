@@ -2,6 +2,7 @@
 layout: article
 title: Hello World
 mathjax: true
+key: 2016-03-06-hello-world
 ---
 
 # 前言

@@ -2,6 +2,7 @@
 layout: article
 title: To be, or not to be
 mathjax: true
+key: 2016-05-28-To-be
 ---
 
 >To be, or not to be

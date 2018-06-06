@@ -2,6 +2,7 @@
 layout: article
 title: Machine Learning I
 mathjax: true
+key: 2016-06-09-Machine-Learning-1
 ---
 
 在学习Andrew Ng的机器学习课程[Machine Learning](https://www.coursera.org/learn/machine-learning)，上了这个课之后感觉，这才叫MOOC好不好！老师很认真的在讲，而且讲的特别细致，连不会微积分都没关系(￣▽￣)"

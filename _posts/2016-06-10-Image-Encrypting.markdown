@@ -2,6 +2,7 @@
 layout: article
 title: 藏于图片的信息
 mathjax: true
+key: 2016-06-10-Image-Encrypting
 ---
 
 # 背景

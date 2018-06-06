@@ -3,6 +3,7 @@ layout: article
 title: 汇编实现汉诺塔
 mathjax: true
 tags: 汇编
+key: 2016-10-22-masm2
 ---
 
 通常学一门新语言，都是先写一个汉诺塔熟悉这种语言的函数时如何构造的。

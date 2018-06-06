@@ -2,6 +2,7 @@
 layout: article
 title: 期中成绩爬虫
 mathjax: true
+key: 2016-05-07-mid-score
 ---
 
 # 背景

@@ -2,6 +2,7 @@
 layout: article
 title:  转椅子——魔兽争霸之月纹传说
 mathjax: true
+key: 2016-05-02-moon-legend
 ---
 
 # 背景

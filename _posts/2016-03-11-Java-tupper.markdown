@@ -2,6 +2,7 @@
 layout: article
 title:  Java实现Tupper自我指涉公式的计算
 mathjax: true
+key: 2016-03-11-Java-tupper
 ---
 
 # Tupper自我指涉公式

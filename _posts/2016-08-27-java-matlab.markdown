@@ -2,6 +2,7 @@
 layout: article
 title: 简单密码加密\解密——尝试Java调用MATLAB
 mathjax: true
+key: 2016-08-27-java-matlab
 ---
 
 # 背景
