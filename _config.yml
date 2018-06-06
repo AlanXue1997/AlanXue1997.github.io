@@ -99,12 +99,12 @@ disqus:
 ## Gitalk
 # please refer to https://github.com/gitalk/gitalk for more info.
 gitalk:
-  clientID: "6107b6e0c8564ca8d4b7" # GitHub Application Client ID
-  clientSecret: "54b88e376feaa59b245dddc4c04057e042f80664" # GitHub Application Client Secret
-  repository: "AlanXue1997.github.io" # GitHub repo
-  owner: "AlanXue1997" # GitHub repo owner
+  clientID: 6107b6e0c8564ca8d4b7 # GitHub Application Client ID
+  clientSecret: 54b88e376feaa59b245dddc4c04057e042f80664 # GitHub Application Client Secret
+  repository: AlanXue1997.github.io # GitHub repo
+  owner: AlanXue1997 # GitHub repo owner
   admin: # Github repo owner and collaborators, only these guys can initialize github issues, IT IS A LIST.
-    - "AlanXue1997"
+    - AlanXue1997
 
 
 ## => Pageview
