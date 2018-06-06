@@ -1,19 +1,18 @@
 ---
-title:  藏于图片的信息
-date:   2016-06-10 17:21
+layout: article
+title: 藏于图片的信息
+mathjax: true
 ---
 
-<script src="{{ site.baseurl }}/assets/prism.js" ></script>
-
-## 背景
+# 背景
 
 上学期刚开学的时候，在软件工程导论课（网课，在[中国大学MOOC](http://www.icourse163.org/)上）上，[战德臣](http://www.cs.hit.edu.cn/?q=node/62)老师曾经讲过一个信息隐藏问题，可以利用人眼对颜色的微小变化不敏感这一特点，将信息隐藏在图片之中，从而掩人耳目。但我曾经尝试过用Ｃ、Pascal去处理图片，但那个难度是有的，不可能简单百度一下就去应用，所以就没有去尝试。
 
+<!--more-->
+
 这几天正在学着使用MATLAB，发现它处理起图像是如此的轻松加愉快，于是就想拿战老师讲的这个信息隐藏的方法试试。
 
-<div class="divider"></div>
-
-## 方法
+# 方法
 
 图片在MATLAB中存储为一个三维矩阵[height, width, 3([RGB](http://baike.baidu.com/link?url=iLhWJJu4SxxWPlKqg86uLqa9Gjs9_LgxJAje4CofevlOcTsC7LSNMmtnOn3GoWhvQyfWr9rFLYfEb2MiBaRxb_))]，数据类型是8位无符号整形（uint8），也就是0~255之间。
 
@@ -25,7 +24,7 @@ date:   2016-06-10 17:21
 
 例：要将字符'例'存入某图片的前6个像素
 
-<img src="{{ site.baseurl }}/assets/pix1.png" />
+<img src="{{ site.baseurl }}/assets/images/pix1.png" />
 
 在MATLAB中存储为
 
@@ -112,13 +111,13 @@ date:   2016-06-10 17:21
 
 对应的图片为
 
-<img src="{{ site.baseurl }}/assets/pix2.png" />
+<img src="{{ site.baseurl }}/assets/images/pix2.png" />
 
 变换前后是看不出什么变化的。
 
 <div class="divider"></div>
 
-## 实现
+# 实现
 
 实现和上面方法稍有不同的是，并没有直接替换最后一位，而是如果最后一位本来就是想存的数，则不处理；否则，将这个数减1（如果是0，变为1）。效果和上面的方法是一样的。
 
@@ -231,9 +230,7 @@ fclose(f);
 end
 ```
 
-<div class="divider"></div>
-
-## 其他
+# 其他
 
 这样，以后就可以藏各种文本信息了，就算藏到头像里，也没人能发现(●ˇ∀ˇ●)
 
@@ -241,12 +238,10 @@ end
 
 在开始的时候，我误以为添加过信息的图片看起来会多多少少有些不自然。但没想到，完全看不出来的有木有！！！比如下面这两张图，前者是原图，后者在里面隐藏了整篇千字文，完全看不出区别。
 
-#### before
+## before
 
-<img src="{{ site.baseurl }}/assets/zhu.png" />
+<img src="{{ site.baseurl }}/assets/images/zhu.png" />
 
-#### after
+## after
 
-<img src="{{ site.baseurl }}/assets/zhux.png" />
-
-<div class="divider"></div>
+<img src="{{ site.baseurl }}/assets/images/zhux.png" />

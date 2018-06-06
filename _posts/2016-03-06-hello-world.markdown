@@ -1,12 +1,10 @@
 ---
-title:  Hello World
-date:   2016-03-06 20:02
+layout: article
+title: Hello World
+mathjax: true
 ---
 
-<script src="{{ site.baseurl }}/assets/prism.js" ></script>
-
-
-## 前言
+# 前言
 
 Hello World 已经几乎成了一种信仰。新学一门语言，如果不打出一个 Hello World，就会觉得少了点什么。拿起一本教材，如果书里没有Hello World，就会不自觉地鄙视作者。
 
@@ -16,9 +14,9 @@ Hello World 已经几乎成了一种信仰。新学一门语言，如果不打�
 
 由于这次的 Hello World 完成的异常艰难，我开始回忆之前各种各样的 Hello World 的难度，不经意间，就开始思考之前学习编程的道路。
 
-<div class="divider"></div>
+<!--more-->
 
-## 初中
+# 初中
 初中有信息学的竞赛培训，想参加这个培训需要先通过一个考试，那次考的是数学，没记错的话得了87分。当时定的是成绩达到90或以上才可以参加培训，但由于我上的子弟班考的都很烂，老师一想，总不能一个名额都不给吧，于是就勉强让我加入了。
 
 当时是每周五下午放学去上课，至今还清楚的记得第一节课老师在黑板上写的不明觉厉的代码：
@@ -45,9 +43,7 @@ end.
 
 当时想着，那就算了吧，高中还有机会，毕竟也有人是从高中才开始学的嘛。
 
-<div class="divider"></div>
-
-## 高中
+# 高中
 
 高一的时候，有一本数学书讲了编程，我一看，BASIC语言，上网一查貌似还挺神奇，可以直接有窗体，意思不就是终于不是只有黑窗口了？！于是赶紧去学了学，趁寒假把书上所有的例子都用Visual Basic给做了出来。
 
@@ -65,9 +61,7 @@ end.
 
 第一次写Python，感觉真是爽翻了，`2**1000`信手拈来，这不就是一个超级好用的计算器？于是我并没有去学Python的语法究竟是什么，只是拿它当计算器用了用。
 
-<div class="divider"></div>
-
-## 大学
+# 大学
 
 大一上学期学的是C语言，而且还学的很简单。在大一年度项目里写Unity里的脚本，C#和JS傻傻分不清楚，各种不明觉厉完全就是为了做项目强行去写，不太理解自己写的是什么。
 
@@ -117,13 +111,11 @@ if(runn):
 
 ```
 
-<div class="divider"></div>
-
-## Hello World
+# Hello World
 
 最后，写上至今学的各式各样的Hello World吧，毕竟信仰。
 
-#### Pascal
+## Pascal
 
 ```pascal
 program HelloWorld(input,output);
@@ -132,7 +124,7 @@ begin
 end.
 ```
 
-#### C
+## C
 
 ```c
 #include<stdio.h> 
@@ -144,7 +136,7 @@ int main()
 }
 ```
 
-#### C++
+## C++
 
 ```cpp
 #include<cstdio>
@@ -159,13 +151,13 @@ int main(void)
 
 ```
 
-#### Python 3
+## Python 3
 
 ```python
 print("Hello World")
 ```
 
-#### Java
+## Java
 
 ```java
 import java.util.*;
@@ -176,5 +168,3 @@ public class HelloWorld{
 	}
 }
 ```
-
-<div class="divider"></div>

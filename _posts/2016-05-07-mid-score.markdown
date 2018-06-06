@@ -1,17 +1,16 @@
 ---
-title:  期中成绩爬虫
-date:   2016-05-07 23:24
+layout: article
+title: 期中成绩爬虫
+mathjax: true
 ---
 
-<script src="{{ site.baseurl }}/assets/prism.js" ></script>
-
-## 背景
+# 背景
 
 今天进行了期中考试，考完之后看他们在查别人的成绩，一个一个的查真痛苦→_→，于是我就想，这不是正好这几天在尝试爬虫，那我就写个爬虫获取一下整个学院的人的成绩吧
 
-<div class="divider"></div>
+<!--more-->
 
-## 过程
+# 过程
 
 本来还想着，这次可不是微博那种一个Cookie闯天下，得好好看看模拟登陆是怎么回事了，结果，之后我就惊呆了！
 
@@ -38,9 +37,7 @@ date:   2016-05-07 23:24
 
 既然网页都获取到了，剩下的步骤就很简单了，穷举学号，获取网页，正则提取成绩即可
 
-<div class="divider"></div>
-
-## 代码
+# 代码
 
 代码是用python写的，其实爬虫我只会python，真的是不要太方便。
 
@@ -111,20 +108,16 @@ conn.close()
 
 ```
 
-<div class="divider"></div>
-
-## 简单分析
+# 简单分析
 
 现在的学霸真是越来越多了，受不了的好吧，考个18分只是勉强过得去，16分排名就三位数了！→_→
 
 凡是有成绩的同学，最低分8分，有7个人没有成绩，可能是旷考或者考的时候出问题了。
 
-<img src="{{ site.baseurl }}/assets/mid_score1.jpg" />
+<img src="{{ site.baseurl }}/assets/images/mid_score1.jpg" />
 
 上面这个图是来用[Raw](http://raw.densitydesign.org/)制作出来的，看起来很高端，但貌似效果并不好。好吧，于是又做了一个简单粗暴，通俗易懂的柱状图&折线图。
 
-<img src="{{ site.baseurl }}/assets/mid_score2.png" />
+<img src="{{ site.baseurl }}/assets/images/mid_score2.png" />
 
 至此，爬取同学们的成绩就结束了。（但数据我保留下来了，hiahia~）
-
-<div class="divider"></div>

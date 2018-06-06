@@ -1,31 +1,28 @@
 ---
+layout: article
 title:  转椅子——魔兽争霸之月纹传说
-date:   2016-05-02 21:47
+mathjax: true
 ---
 
-<script src="{{ site.baseurl }}/assets/prism.js" ></script>
-
-## 背景
+# 背景
 
 前些天老葛玩魔兽争霸的时候，被一个叫做转椅子的游戏给拦住了去路。但是看见这一关，第一反应，我去，这不活生生一道OI题，作为一个曾经的OIer，我瞬间来了敲代码的欲望。
 
-<div class="divider"></div>
+<!--more-->
 
-## 规则
+# 规则
 
 如下图，椅子杂乱的摆放着，现在你每次可以选择一个椅子，使其顺（逆）时针转90°，同时其上、下、左、右的椅子（如果存在）也会顺（逆）时针旋转90°。
 
 现在要求使用如上规则，将所有椅子转回原位（都向上）。
 
-<img src="{{ site.baseurl }}/assets/moon_lengend1.png" />
+<img src="{{ site.baseurl }}/assets/images/moon_lengend1.png" />
 
 但既然都编程了，就不要之解决这一个特定的问题啦，我将题目修改为：
 
 在x*y的方格上，每个格子里有一把椅子，方向是杂乱的，规则同上，输出如何将所有椅子转回原位（都向上）
 
-<div class="divider"></div>
-
-## 寻找
+# 寻找
 
 对着题目想了许久，并没有什么思路，这种题搜索看起来不靠谱，动态规划？然而这种十字形状的规则实在找不到规律。
 
@@ -35,9 +32,7 @@ date:   2016-05-02 21:47
 
 至此，终于找到了这个名叫**Lights Out Puzzle**的游戏
 
-<div class="divider"></div>
-
-## 解决
+# 解决
 
 看这个解决，请先看["Lights Out Puzzle." From _MathWorld_](http://mathworld.wolfram.com/LightsOutPuzzle.html)
 
@@ -108,9 +103,7 @@ L =
 
 游戏中的要求是想反的，从L到L0，只需将顺时针改为逆时针即可。至此，问题就解决了^_^
 
-<div class="divider"></div>
-
-## 编程
+# 编程
 
 最近在学Python的基础知识，就用Python实现了上述过程。
 
@@ -198,12 +191,10 @@ else:
 
 <div class="divider"></div>
 
-## 其他
+# 其他
 
 通过点灯游戏再一次看到了百度百科和wikipedia的差距，可以自己感受一下（一个上来就暴力求解，另一个上来就跟你侃数学）（不算简介）。
 
 [**点灯游戏**-百度百科](http://baike.baidu.com/link?url=J-veA0Pgtva_nwhq_A9PIlea62Dykm2PfimDstR_R-FmsRHztgxaXmWsE7-Fl4xvXUBZUkHWbUOVgideYvg6ZK)
 
 [**Lights Out(game)** from _Wikipedia_](https://en.wikipedia.org/wiki/Lights_Out_%28game%29)
-
-<div class="divider"></div>

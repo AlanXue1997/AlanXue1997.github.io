@@ -1,19 +1,34 @@
-<aside class="logo">
-
-	{% if page.url == '/index.html' or page.url == '/' %}
-		{% assign link = '/about' %}
-		{% assign prompt = 'About Me' %}
-	{% else %}
-		{% assign link = '/' %}
-		{% assign prompt = 'Back to Home' %}
-	{% endif %}
-
-	<a href="{{ link | prepend: site.baseurl }}">
-		<img 
-src="{{ site.baseurl }}/assets/Totora2.png">
-	</a>
-	<span class="logo-prompt">{{ prompt }}</span>
-
-</aside>
-
-<!--src="http://www.gravatar.com/avatar/{{ site.author_gravatar }}.png?s=80" class="gravatar" -->
+<header class="header">
+  <div class="main clearfix">
+    <div class='logo'>
+    {%- include svg/logo.svg -%}
+    {%- assign __path = site.paths.base | default: site.data.variables.default.paths.base  -%}
+    {%- include snippets/get-nav-url.html -%}
+    {%- if site.title -%}
+      <a title="{%- if site.description -%}{{ site.description }}{%- endif -%}" href="{{ __return }}">{{ site.title }}</a>
+    {%- endif -%}
+    </div>
+    {%- assign list = site.data.navigation.header -%}
+    {%- if list -%}
+    <nav>
+      <ul>
+        {%- for item in list -%}
+          {%- assign __path = item.url -%}
+          {%- include snippets/get-nav-url.html -%}
+          {%- assign _nav_url = __return -%}
+          {%- assign __path = page.url -%}
+          {%- include snippets/get-nav-url.html -%}
+          {%- assign _page_url = __return -%}
+          {%- assign __locale = item.titles -%}
+          {%- include snippets/locale-to-string.html -%}
+          {%- if _nav_url == _page_url -%}
+            <li class="active"><a href="{{ _nav_url }}">{%- if item.title -%}{{ item.title }}{%- else -%}{{ __return }}{%- endif -%}</a></li>
+          {%- else -%}
+            <li><a href="{{ _nav_url }}">{%- if item.title -%}{{ item.title }}{%- else -%}{{ __return }}{%- endif -%}</a></li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </nav>
+    {%- endif -%}
+  </div>
+</header>

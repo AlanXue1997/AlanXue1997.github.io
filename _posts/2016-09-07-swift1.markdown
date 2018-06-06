@@ -1,11 +1,12 @@
 ---
-title:  Swift初次尝试
-date:   2016-09-08 16:58
+layout: article
+title: Swift初次尝试
+mathjax: true
 ---
 
-<script src="{{ site.baseurl }}/assets/prism.js" ></script>
-
 最近开始学习IOS开发，先看了看Swift的一些基础知识，写了一个计算汉诺塔的小程序。还是经典的递归算法，算是递归的入门程序了。
+
+<!--more-->
 
 ```swift
 let N = 3
@@ -167,5 +168,3 @@ moveAtoC("a", "b", "c", N)
 现在还没有感受到Swift在语法方面的一些改变到底有什么用意，内部的东西应该是比较新的技术。
 
 学到现在，感受到语言的发展跟硬件的发展是想关联的，从最开始学习16位的Pascal，到现在学习64位的Swift，感觉这些语言越来越不拘小节，就比如Array，里面有很多参数，而且还必须是可变长度的。它应该已经不是简单的队列了，现在的新语言恐怕已经不需要自己去写那些简单的数据结构比如链表这样的结构了。
-
-<div class="divider"></div>

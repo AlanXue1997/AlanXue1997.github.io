@@ -1,11 +1,9 @@
 ---
-title:  汇编实现汉诺塔
-date:   2016-10-22 13:28
+layout: article
+title: 汇编实现汉诺塔
+mathjax: true
+tags: 汇编
 ---
-
-<script src="{{ site.baseurl }}/assets/prism.js" ></script>
-
-# 前言
 
 通常学一门新语言，都是先写一个汉诺塔熟悉这种语言的函数时如何构造的。
 
@@ -13,11 +11,11 @@ date:   2016-10-22 13:28
 
 上节课老师终于讲了一下如何写PROC，CALL，在试了几个简单的类似两个整数相加这样的函数之后，果断开始尝试用汇编写汉诺塔。
 
+<!--more-->
+
 <div class="divider"></div>
 
-# 实现
-
-### 思路
+# 思路
 
 思路就是普通的C语言中递归实现汉诺塔，只需要写出递归函数即可
 
@@ -40,7 +38,7 @@ void han(char A, char B, char C, int k){
 
 ```
 
-### 汇编实现
+# 汇编实现
 
 选择了EAX来存储k，其实挺麻烦的，因为c语言的函数printf回改变EAX，还需要push
 
@@ -50,7 +48,7 @@ void han(char A, char B, char C, int k){
 
 汇编写法
 
-```masm
+```
 PUSH 	3
 PUSH 	'C'
 PUSH 	'B'
@@ -91,11 +89,11 @@ CALL 	HAN
 关键就是需要理解汇编的过程（函数）时怎么个运行方式，之后写起来感觉跟c语言没什么区别，需要提醒一下C语言函数会改变EAX,ECX,EDX，而han过程中用到了EAX，所以在调用printf之前一定要```PUSH EAX```。
 
 
-### 代码
+# 代码
 
 ASM32.INC
 
-```masm
+```
 .386
 .MODEL FLAT, STDCALL
 .STACK 1024
@@ -121,7 +119,7 @@ ExitProcess PROTO : DWORD
 
 *.asm
 
-```masm
+```
 INCLUDE	ASM32.INC
 
 .CODE
@@ -167,5 +165,3 @@ MAIN PROC
 	MAIN ENDP
 	END MAIN
 ```
-
-<div class="divider"></div>

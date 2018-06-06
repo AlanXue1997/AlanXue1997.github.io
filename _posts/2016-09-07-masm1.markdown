@@ -1,15 +1,14 @@
 ---
-title:  汇编初次尝试
-date:   2016-10-15 13:28
+layout: article
+title: 汇编初次尝试
+mathjax: true
 ---
-
-<script src="{{ site.baseurl }}/assets/prism.js" ></script>
-
-# 前言
 
 以前接触语言的顺序是Pascal→C→java/Python→MATLAB，是越来越先进的语言，这是第一次倒过来，学了更加底层的汇编。
 
 学更高级的语言，总是能发现很多事情更加方便了，写代码的速度提高了不少，许多细节都不需要自己去考虑，但是损失了一定的性能。
+
+<!--more-->
 
 这次学了个底层的汇编，最大的感觉就是总能恍然大悟，原来是这个样子啊。比如不管是C还是java，都有++和--操作，在汇编里就对应着INC和DEC；明白了CPU内部究竟是如何工作的；程序是如何知道一段内存是int还是double等。
 
@@ -66,7 +65,7 @@ MPJ:				;
 
 ASM32.INC
 
-```masm
+```
 .386
 .MODEL FLAT, STDCALL
 .STACK 1024
@@ -92,7 +91,7 @@ ExitProcess PROTO : DWORD
 
 *.asm
 
-```masm
+```
 INCLUDE	ASM32.INC
 
 COUNT=5;改成需要排序的数字的个数
@@ -148,4 +147,12 @@ COUNT=5;改成需要排序的数字的个数
 END main
 ```
 
-<div class="divider"></div>
+
+# 2018年5月2日更新
+
+近些天写编译原理，发现汇编怎么配环境已经忘得差不多了。之前可能误删了masm32文件夹，导致找不到```MSVCRT.LIB```文件了，最终只能重新安装了masm32，最终使用新的LIB文件。
+
+VS配环境的步骤为：
+> 1. 新建空项目
+> 2. 在工程上右键，生成依赖项→生成自定义，选择masm
+> 3. 新建.asm文件为汇编文件，.inc文件为头文件（注意顺序）
