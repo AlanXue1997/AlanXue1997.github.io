@@ -111,15 +111,15 @@ gitalk:
 ##############################
 ## Leancloud
 leancloud:
-  app_id: 6uF9I8d4LamJQG8QRfyEB4tm-gzGzoHsz# LeanCloud App id
-  app_key: btYJNORNr1DHSKs6LYvtVRrz# LeanCloud App key
+  app_id: 6uF9I8d4LamJQG8QRfyEB4tm-gzGzoHsz # LeanCloud App id
+  app_key: btYJNORNr1DHSKs6LYvtVRrz # LeanCloud App key
   app_class: Traffic# LeanCloud App class
 
 
 ## => Analytics
 ##############################
 ## Google Analytics
-ga_tracking_id: UA-120517678-1# Google Analytics id for the site
+ga_tracking_id: UA-120517678-1 # Google Analytics id for the site
 ga_anonymize_ip: false # Anonymize IP tracking for Analytics
 
 
