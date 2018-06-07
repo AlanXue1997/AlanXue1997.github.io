@@ -17,7 +17,7 @@
 ## => Site Settings
 ##############################
 text_color_theme: default # "default" (default), "dark", "forest", "ocean", "chocolate", "orange"
-url: # the base hostname & protocol for your site e.g. https://www.someone.com
+url: http://alanxue1997.github.io/# the base hostname & protocol for your site e.g. https://www.someone.com
 baseurl: # does not include hostname
 title: Alan Xue's blog
 description: > # this means to ignore newlines until "Language & timezone"
@@ -46,7 +46,7 @@ author:
 
 ## => GitHub Repository (if the site is hosted by GitHub)
 ##############################
-repository: someone/someone.github.io
+repository: AlanXue1997/AlanXue1997.github.io
 repository_tree: master
 
 
@@ -111,15 +111,15 @@ gitalk:
 ##############################
 ## Leancloud
 leancloud:
-  app_id: # LeanCloud App id
-  app_key: # LeanCloud App key
-  app_class: # LeanCloud App class
+  app_id: 6uF9I8d4LamJQG8QRfyEB4tm-gzGzoHsz# LeanCloud App id
+  app_key: btYJNORNr1DHSKs6LYvtVRrz# LeanCloud App key
+  app_class: Traffic# LeanCloud App class
 
 
 ## => Analytics
 ##############################
 ## Google Analytics
-ga_tracking_id: # Google Analytics id for the site
+ga_tracking_id: UA-120517678-1# Google Analytics id for the site
 ga_anonymize_ip: false # Anonymize IP tracking for Analytics
 
 
