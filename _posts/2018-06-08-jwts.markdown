@@ -1,0 +1,81 @@
+---
+layout: article
+title: 哈工大教学评价随机选择脚本
+mathjax: true
+tags: 哈工大 教务处 油猴
+key: 2018-06-08-jwts
+---
+
+# 背景
+
+又是一年教学评价，每次教学评价其实一开始挺想给每个老师一个公正的评价的。但无奈那个教评系统太烦了，有一万个需要选的地方，“5”和“实验未开出”、“个人未听课”离得超级近，这两个天选之选项一旦误选，整行都会变成同样的。而且我记得我前两天明明评过教了，不知道怎么回事那个评教就神奇的消失了，还得重新评一次。
+
+这次我坚决不再一个一个点了，花了评教十倍的时间，学了一些`JQuery`的知识，写了一个[油猴（tampermonkey）](http://tampermonkey.net/)脚本，帮我点每一个`select`，并且为了表示不满，我没有默认点最好的，而是全部随机。
+
+![无奈](/assets/images/无奈.jpg){:.shadow}
+
+<!--more-->
+
+# 代码
+
+这个代码其实没什么难度，写了这么久主要是因为自己啥都不懂。是真的啥都不懂，我花了两个小时时候才明白原来我一直在写的都是`JQuery`库的东西。
+
+后面（误以为）发现教务处的破网站还是动态加载的，直接获取还获取不到，就查了好多获取动态标签的方法。但后来发现，原来教务处就是在`iframe`中又打开了个网页，其实是可以直接获取到的。
+
+代码的具体实现注释里讲的就比较清楚了。这个脚本只在`Chrome`的`Tampermonkey`插件中试过，至少在我这里是能用的。
+
+```js
+// ==UserScript==
+// @name         HIT random selector
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  教学评价那里有一万个选择框，太烦了，这个脚本一键随机选择
+// @author       Alan
+// @match        http://jwts.hit.edu.cn/*
+// @require      http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
+// @grant        GM_xmlhttpRequest
+// ==/UserScript==
+
+var s = $("body");
+//教务处系统外部是一个html，内部iframe又是一个html
+//该脚本会被执行两次，只有iframe里面的那一次是需要的
+//暂时用marginwidth判断就行
+if(s.attr('marginwidth')){
+    //随便插一个按钮
+    s.prepend("<button id='randomButton'>Random</button>");
+    //给按钮注册事件
+    $('#randomButton').on('click',function(){
+        var v = $("select");//获取所有的选择框
+        var i;
+        var wrong = ["其它", "-请选择-", "实验未开出", "无法评价", "教师未上课", "个人未听课"];//这里存储所有不想选的选项，如果你不想给1分，2分什么的，也可以加进去
+        //对每个select进行操作
+        for(i=0;i<v.length;i++){
+            var op = $('option', v[i]);//获取第i个select的所有option
+            var options = [];//初始化一个Array，里面存有可能被选的option的value
+            var j;
+            //对每个第i个select的所有option进行操作
+            for(j=0;j<op.length;++j){
+                //第j个选项的text不在wrong数组中，且第j个选项的value不为空
+                if(jQuery.inArray($(op[j]).text(), wrong) == -1 && $(op[j]).val().length>0){
+                    options.push($(op[j]).val());//将value加入options
+                }
+            }
+            var random = Math.floor(options.length * (Math.random() % 1));//随机一个index
+            $(v[i]).val(options[random]);//根据index设置select的option
+        }
+    });
+}
+
+```
+
+# 用法
+
+首先要下载安装支持油猴脚本的插件，[Greasy Fork](https://greasyfork.org/zh-CN)上列出了不同的浏览器有哪些插件可以下载。我这里用的就是[油猴的Chrome插件](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)。
+
+安装好插件后，添加新脚本，复制粘贴上面的代码即可。
+
+![无奈](/assets/images/jwts1.png){:.shadow}
+
+如果不出意外的话，之后每次登陆教务处系统后，都会出现一个`Random`按钮，这个按钮的作用就是把页面上的所有`select`都随机一遍，不想选的内容可以在代码里添加。
+
+![无奈](/assets/images/jwts2.png){:.shadow}

@@ -1,0 +1,52 @@
+---
+layout: article
+title: 在VS中用C语言操作MySQL
+mathjax: true
+tags: C MySQL 配环境 数据库 哈工大
+key: 2018-06-07-c-mysql
+---
+
+根据学校数据库课程的实验要求，需要使用C语言进行数据库的查询操作。这篇文章**不介绍**如何做实验，只讲如何配环境，配Visual Studio 2015的环境。
+
+<!--more-->
+
+# 建立工程
+
+首先，通过VS建立一个空项目，新建完项目后，要在属性页进行三处设置。
+
+1. **项目属性→配置属性→C/C++→常规→附加包含目录**中添加mysql安装目录下的**include文件夹**，这里面包含了mysql.h文件
+![c-mysql-1](/assets/images/c-mysql-1.png){:.border} 
+2. **项目属性→配置属性→链接器→常规→附加库目录**中添加mysql安装目录下的**lib文件夹**，这里面包含了链接所需要的lib文件
+![c-mysql-1](/assets/images/c-mysql-2.png){:.border} 
+3. **项目属性→配置属性→链接器→输入→附加依赖项**中添加lib文件夹中的**libmysql.lib文件**
+![c-mysql-1](/assets/images/c-mysql-3.png){:.border} 
+
+运行后，会发现找不到`libmysql.dll`，我的解决方法是将lib文件夹中的`libmysql.dll`复制到VS编译的exe文件同目录下。除此之外暂时没找到更好的方法。
+
+mysql同时提供了`libmysqld.lib`和`libmysql.lib`，根据往常的习惯，在debug模式下应该导入`libmysqld.lib`。但这样mysql连接一直初始化失败，后来在stackoverflow上进行查询，才发现这是`libmysqld.lib`经常出现的问题，因此最终改回了`libmysql.lib`。
+
+# 编码问题
+
+VS的默认编码是`gbk-2312`，而我想要访问的数据库的编码设置为`utf8`，因此，直接进行查询操作后，返回的结果输出是乱码。
+
+最开始想到的是cmd窗口的问题，在stackoverflow上进行查询，得到了如下的解决方案
+
+```c
+#include <windows.h>
+#pragma execution_character_set( "utf-8" )
+…
+SetConsoleOutputCP(65001);//设置输出代码页为65001（utf8）
+```
+
+这种方法相当于修改了cmd窗口的编码方式，因此在输出的时候能够正确输出utf8编码的结果了。
+
+但后面又遇到了问题，程序最终执行的时候，需要在cmd窗口调用程序，通过argv传递参数，在这个传递参数的时候，中文又会出现乱码，导致查询结果为空（因为没有相等的字符串）。这个问题可能遇到的人比较少，没有搜索到解决的方法。
+
+因此最终换了一种解决方案，发现mysql在连接时，可以设置期望的编码格式，代码如下：
+```c
+// 设置数据库默认字符集
+	if (mysql_set_character_set(&mysql_conn, "gbk")) {
+		fprintf(stderr, "错误, %s/n", mysql_error(&mysql_conn));
+	}
+```
+这样直接将期望的字符集设置成gbk，就不再需要VS方面做任何修改了，数据库的代码也不会被改变。

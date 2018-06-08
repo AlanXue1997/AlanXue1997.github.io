@@ -1,0 +1,12 @@
+---
+layout: article
+title: Alan Xue's Compiler
+mathjax: true
+tags: C++ 编译原理 哈工大 词法分析 语法分析 语义分析 中间代码生成 代码生成
+key: 2018-06-07-compiler
+published: false
+---
+
+[ANSI C Yacc grammar](https://www.lysator.liu.se/c/ANSI-C-grammar-y.html)
+
+# 词法分析
