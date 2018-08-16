@@ -1,0 +1,92 @@
+---
+layout: article
+title: Alan的C++笔记
+mathjax: true
+tags: C++ 笔记
+key: 2018-07-14-alan-C++
+published: true
+---
+
+这是个笔记，并非教程。
+{:.warning}
+
+# 前言
+
+这里将记录个人在写C++的过程中遇到的各种问题，以及解决方法。如果大家发现哪里写错了，过时了，或有别的任何问题，欢迎在下方评论或发邮件告知。
+
+<!--more-->
+
+# 字符串相关
+## 向需要```std::string```的函数传递```char```
+### 问题描述
+有一个函数类似于
+```cpp
+int foo(std::string st){
+	...
+}
+```
+但是，我在调用的时候只是想传递一个字符给它，存在一个```char```类型的变量里
+```cpp
+char ch = '*';
+foo(ch);
+```
+但这样写是不行的，因为类型不匹配。
+如果是在别的地方，```char```类型转```std::string```类型可以用```std::string(ch)```来进行，但在这里不行。
+### 解决方法
+在stackoverflow上找到了解决方案：[How to pass a char to a function expecting a string](https://stackoverflow.com/questions/24530144/how-to-pass-a-char-to-a-function-expecting-a-string)
+[Mike Seymour](https://stackoverflow.com/users/204847/mike-seymour)的回答获得了最高赞同，对其翻译如下：
+首先，C++中没有```char```到```std::string```中的隐式类型转换（[implicit conversion](https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.cbclx01/implicit_conversion_sequences.htm)）。因此，你必须使用一个合适的构造函数，这个构造函数需要两个参数，用法如下：
+```cpp
+test(std::string(1, 'a'));
+```
+或者，从```c++11```开始，可以借助初始化表（initialiser list）
+```cpp
+test({'a'});             // 如果test函数的重载没有疑义
+test(std::string{'a'});  // 如果你需要指明类型
+```
+
+# Eigen库 && ligigl库
+
+> Eigen is a C++ template library for linear algebra: matrices, vectors, numerical solvers, and related algorithms.
+
+> libigl is a simple C++ geometry processing library
+
+## Vector 以及 Matrix 类型
+
+官方文档：[The Matrix class](http://eigen.tuxfamily.org/dox/group__TutorialMatrixClass.html)
+
+Eigen提供了非常多的类来描述向量和矩阵，然而他们都来自**相同的**模板类```Matrix```。
+
+这些类的命名方式为```Matrix(N)(T)```或```Vector(N)(T)```。其中```(N)```代表维度，```(T)```代表类型。例如，```Matrix3f```表示的就是一个3×3的```float```类型的矩阵。
+
+符号```(N)```除了数字之外，还可以是```X```，表示不能提前确定其大小，例如```VectorXf```。
+
+符号```(T)```的类型（我见过的）有三种：```i```表示```int```，```f```表示```float```，```d```表示```double```。
+
+以下是一些定义变量的例子
+
+```c++
+using namespace Eigen;
+
+Matrix3f a;
+MatrixXf b;
+MatrixXf c(10,15);
+VectorXf d(30);
+Vector2d e(5.0, 6.0);
+Vector3d f(5.0, 6.0, 7.0);
+Vector4d g(5.0, 6.0, 7.0, 8.0);
+
+```
+
+## MATLAB to Eigen (&&igl)
+
+[《MATLAB to Eigen table》](http://igl.ethz.ch/projects/libigl/matlab-to-eigen.html)是供熟悉MATLAB的人参考的一个对照表。如果你熟悉MATLAB的话，可以通过这个对照表查找如果用Eigen和Ligigl实现MATLAB对应的操作。
+
+# Visual Studio 2015
+
+## 快捷键
+
+|||
+|-|-|
+|添加注释|```ctrl```+```k```+```c```|
+|删除注释|```ctrl```+```k```+```u```|
