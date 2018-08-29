@@ -1,5 +1,235 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh-Hans"><generator uri="https://jekyllrb.com/" version="3.8.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="zh-Hans" /><updated>2018-08-16T15:35:40+08:00</updated><id>http://localhost:4000/</id><title type="html">Alan Xue’s blog</title><subtitle>Alan Xue's Blog
-</subtitle><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><entry><title type="html">使用python控制LEGO-NXT（Win10）</title><link href="http://localhost:4000/2018/08/16/nxt-python.html" rel="alternate" type="text/html" title="使用python控制LEGO-NXT（Win10）" /><published>2018-08-16T00:00:00+08:00</published><updated>2018-08-16T00:00:00+08:00</updated><id>http://localhost:4000/2018/08/16/nxt-python</id><content type="html" xml:base="http://localhost:4000/2018/08/16/nxt-python.html">&lt;h1 id=&quot;前言&quot;&gt;前言&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh-Hans"><generator uri="https://jekyllrb.com/" version="3.8.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="zh-Hans" /><updated>2018-08-29T14:01:52+08:00</updated><id>http://localhost:4000/</id><title type="html">Alan Xue’s blog</title><subtitle>Alan Xue's Blog
+</subtitle><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><entry><title type="html">LEGO-NXT解魔方</title><link href="http://localhost:4000/2018/08/27/nxt-rubik.html" rel="alternate" type="text/html" title="LEGO-NXT解魔方" /><published>2018-08-27T00:00:00+08:00</published><updated>2018-08-27T00:00:00+08:00</updated><id>http://localhost:4000/2018/08/27/nxt-rubik</id><content type="html" xml:base="http://localhost:4000/2018/08/27/nxt-rubik.html">&lt;h1 id=&quot;前言&quot;&gt;前言&lt;/h1&gt;
+
+&lt;p&gt;很久以前就知道LEGO-NXT可以解魔方，但网上最经典的解决方法需要用到RGB模块，这个模块在机器人套装中没有，单独购买还挺贵。除此之外，也能见到有些人用手机来识别魔方的颜色，但由于自己当时编程能力有限，也就没有去做。&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;在上一篇博文中，我学会了如何使用Python来控制NXT。有了Python之后，就感觉此事，有戏。因为有了Python作为桥梁，大多数问题都可以同过import来解决😂。&lt;/p&gt;
+
+&lt;p&gt;进入正文之前，首先看一下最终效果&lt;/p&gt;
+
+&lt;embed src=&quot;http://player.youku.com/player.php/sid/XMzgwMjIyMDQyMA==/v.swf&quot; allowfullscreen=&quot;true&quot; quality=&quot;high&quot; width=&quot;480&quot; height=&quot;400&quot; align=&quot;middle&quot; allowscriptaccess=&quot;always&quot; type=&quot;application/x-shockwave-flash&quot; /&gt;
+
+&lt;p&gt;这篇文章旨在向同样想使用NXT解魔方的人提供一些&lt;strong&gt;思路和方法，不会特别全面&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p class=&quot;success&quot;&gt;如果大家遇到了其他的问题或想要知道更多的细节，欢迎留言告知。&lt;/p&gt;
+
+&lt;h1 id=&quot;准备工作&quot;&gt;准备工作&lt;/h1&gt;
+
+&lt;h2 id=&quot;nxt机器人&quot;&gt;NXT机器人&lt;/h2&gt;
+
+&lt;p&gt;机器人最大的作用是拧魔方，还有一个附带的作用是展示魔方的每一面，以方便识别颜色。&lt;/p&gt;
+
+&lt;p&gt;我直接使用了&lt;a href=&quot;http://mindcuber.com/mindcuber/mindcuber.html&quot;&gt;MindCuber for LEGO MINDSTORMS NXT 2.0&lt;/a&gt;的设计，这个设计十分巧妙且经典，用两个电机就能完成魔方的所有操作。不过，由于我们并不打算使用RGB感应器来识别颜色，因此右侧那一坨（最右侧的电机及以上）不需要安装。如果像我一样比较懒，超声波部分也不需要安装。&lt;/p&gt;
+
+&lt;p&gt;我拥有的是LEGO 9797+9695，这里面有的部件数量不满足MindCuber for LEGO MINDSTORMS NXT 2.0的要求，所有拼的时候灵活一些，遇见不够了就拿别的代替就好了。&lt;/p&gt;
+
+&lt;p class=&quot;info&quot;&gt;提示：尽量多代替底部支架部分，少代替顶部的机械臂。&lt;/p&gt;
+
+&lt;h2 id=&quot;手机&quot;&gt;手机&lt;/h2&gt;
+
+&lt;p&gt;手机需要安装一个叫IP Webcam的APP，免费的版本就可以。&lt;/p&gt;
+
+&lt;p&gt;打开软件后滑到最底部点击start server，则软件开始运行，屏幕下方会显示服务器的地址即端口号，例如我的是&lt;code class=&quot;highlighter-rouge&quot;&gt;192.168.0.101:8080&lt;/code&gt;，此时，使用电脑（同一个子网，或者说路由器内）浏览器访问网址&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;地址:端口号/shot.jpg
+（例如192.168.0.101:8080/shot.jpg）
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;如果显示出了手机及时拍摄的照片，则说明手机部分没有问题。&lt;/p&gt;
+
+&lt;h2 id=&quot;python&quot;&gt;Python&lt;/h2&gt;
+
+&lt;p&gt;推荐使用Python2.7。如果使用其他版本，主要的阻碍在nxt-python，如果其能够正常工作，则其他的问题应该不难解决。下面是一些包&lt;/p&gt;
+
+&lt;h3 id=&quot;nxt-python&quot;&gt;nxt-python&lt;/h3&gt;
+
+&lt;p&gt;通过这个包控制NXT机器人。安装方法见&lt;a href=&quot;http://alanxue1997.github.io/2018/08/16/nxt-python.html&quot;&gt;使用python控制LEGO-NXT（Win10）&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h3 id=&quot;urllib&quot;&gt;urllib&lt;/h3&gt;
+
+&lt;p&gt;通过这个包来访问手机上的IP WebCame，Python2.7已内置。&lt;/p&gt;
+
+&lt;h3 id=&quot;opencv--numpy&quot;&gt;opencv &amp;amp;&amp;amp; numpy&lt;/h3&gt;
+
+&lt;p&gt;处理图像难免会用到的两个包。&lt;/p&gt;
+
+&lt;p&gt;opencv在这个&lt;a href=&quot;https://www.lfd.uci.edu/~gohlke/pythonlibs/#opencv&quot;&gt;网站&lt;/a&gt;找到想要的版本，下载whl文件，之后执行&lt;code class=&quot;highlighter-rouge&quot;&gt;pip install xxx.whl&lt;/code&gt;即可。&lt;/p&gt;
+
+&lt;p&gt;numpy已经安装太久记不清，估计直接&lt;code class=&quot;highlighter-rouge&quot;&gt;pip install numpy&lt;/code&gt;就行。&lt;/p&gt;
+
+&lt;h3 id=&quot;kociemba&quot;&gt;kociemba&lt;/h3&gt;
+
+&lt;p&gt;这个包用来计算魔方的解法，可以不用或换别的。安装的时候&lt;strong&gt;一定要&lt;/strong&gt;按照&lt;a href=&quot;https://github.com/muodov/kociemba&quot;&gt;Github主页&lt;/a&gt;的教程来，特别提醒需要先安装Installation后半部分的build tools，再执行pip安装。&lt;/p&gt;
+
+&lt;h1 id=&quot;编程&quot;&gt;编程&lt;/h1&gt;
+
+&lt;p&gt;如果前面的准备工作都已经完成，则你将完全可以使用不超过300行的代码，使NXT机器人成功还原魔方！&lt;/p&gt;
+
+&lt;p&gt;下面将分为3个部分给出编程的思路及提示。&lt;/p&gt;
+
+&lt;h2 id=&quot;nxt机器人-1&quot;&gt;NXT机器人&lt;/h2&gt;
+
+&lt;p&gt;机器人部分的编程就是控制电机，拧魔方。&lt;/p&gt;
+
+&lt;p&gt;具体到MindCuber for LEGO MINDSTORMS NXT 2.0而言，就是控制两个电机。其中底部的电机比较简单，电机上和底座上的齿轮分别由12齿和36齿，也就是3：1的转速，因此如果想要魔方旋转90度，则需要电机（反方向）旋转270度。&lt;/p&gt;
+
+&lt;p&gt;我们可以使用如下的方式旋转&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;brick&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nxt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;locator&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;find_one_brick&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'NXT'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;base&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Motor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;brick&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PORT_A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;base&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;turn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;270&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这个写法会使PORT_A连接的电机以50的正向速度旋转270度。如果想要反向旋转，则应该把速度改为-50，而非角度改为-270。&lt;/p&gt;
+
+&lt;p&gt;不过，使用这个方法进行旋转并不是十分精确，可能会有几度的偏差，如果多旋转几次，偏差可能会越来越大。不过，NXT的电机还有读取角度的功能，这样，我们就可以不使用相对角度，转而使用绝对角度。即记录一个变量now_degree，表示电机应该处在的角度，然后通过它与电机实际读数的差值进行旋转。例如，第一次旋转270度，实际上转了275度，第二次又要转270度，经过计算，now_degree应该是540度，差值为265度，则这次只需要转265度就行了。这样子偏差始终都能在一个可控范围。&lt;/p&gt;
+
+&lt;p&gt;除了底部，还有一个控制机械臂的电机，这个电机主要在三个角度之间来回切换，仍然推荐使用绝对角度，角度值可以自己试出来。如果不知道机械臂的三种状态长什么样子，可以看&lt;a href=&quot;http://mindcuber.com/mindcuber/mindcuber.html&quot;&gt;MindCuber for LEGO MINDSTORMS NXT 2.0&lt;/a&gt;网站上的视频。&lt;/p&gt;
+
+&lt;p&gt;在基础的旋转搞定之后，推荐将机器人封装成五种（或以上）操作，这样后面的编程就不用再思考这里的细节了。&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;名称&lt;/th&gt;
+      &lt;th&gt;具体操作&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;翻转&lt;/td&gt;
+      &lt;td&gt;对应机械臂的两步操作&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;整体旋转（顺时针）&lt;/td&gt;
+      &lt;td&gt;机械臂抬起，底座旋转&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;整体旋转（逆时针）&lt;/td&gt;
+      &lt;td&gt;机械臂抬起，底座旋转&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;单面旋转（顺时针）&lt;/td&gt;
+      &lt;td&gt;机械臂放下，底座旋转&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;单面旋转（逆时针）&lt;/td&gt;
+      &lt;td&gt;机械臂放下，底座旋转&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;颜色获取&quot;&gt;颜色获取&lt;/h2&gt;
+
+&lt;h3 id=&quot;一些废话可跳过&quot;&gt;一些废话（可跳过）&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;书到用时方恨少，事非经过不知难&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;大家或许都看到过这样的图片，A和B区域的颜色其实是一样的。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/rubik-1.jpg&quot; alt=&quot;rubik-1&quot; class=&quot;shadow&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;第一次看到这样的图片还觉得，人类果然还是没有机器客观准确啊。&lt;/p&gt;
+
+&lt;p&gt;但是，这次问题是反过来的，如果你要识别这个棋盘的颜色，拍照的时候因为有个圆柱挡了点光，然后电脑硬说A和B颜色一样，你就会发现电脑愚钝死板了！&lt;/p&gt;
+
+&lt;p&gt;在识别魔方颜色上我就遇到了这样的问题，最容易出问题的就是&lt;strong&gt;橙色&lt;/strong&gt;和&lt;strong&gt;红色&lt;/strong&gt;，在太阳光下还好，如果在台灯下，就会经常出现“远处深红近处橙”的现象。&lt;/p&gt;
+
+&lt;p&gt;由于图像方面我不甚了解，最终也没有太好的解决方法，只能是写了一个自动重设颜色的函数：按顺序把魔方的六种颜色放在魔方的同一个面里，然后拍一张照片计算颜色，并保存。&lt;/p&gt;
+
+&lt;h3 id=&quot;正文&quot;&gt;正文&lt;/h3&gt;
+
+&lt;p&gt;颜色获取的第一步是&lt;strong&gt;定位&lt;/strong&gt;，魔方每一面都有九个方块，我们需要先找到这九个方块在哪里。&lt;/p&gt;
+
+&lt;p&gt;我的思路非常简单粗暴，虽然每次拍摄魔方的位置都有些许变化，但大致位置相同，因此直接把位置写成固定的，然后等间隔地选取九个小方块即可。如图&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/rubik-2.png&quot; alt=&quot;rubik-2&quot; class=&quot;shadow&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/rubik-3.png&quot; alt=&quot;rubik-3&quot; class=&quot;shadow&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;当然，此时我们不能完全相信小方块中的所有颜色，或者它们的均值，因为有些像素是不属于魔方的。&lt;/p&gt;
+
+&lt;p&gt;如果我们事先知道魔方的六种颜色的rgb值，则可以设置一个阈值$\epsilon$，然后对每一种颜色计算&lt;strong&gt;距离小于$\epsilon$&lt;/strong&gt;的像素的个数，哪种颜色多就认为是哪种颜色，写成优化问题就是&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;\mathop{\arg\max}_{color} |\{pixel|\Vert pixel-color\Vert_2 \le \epsilon\}|&lt;/script&gt;
+
+&lt;p&gt;说起来复杂，其实计算起来一句话就搞定，$\epsilon$大概设50左右，可以多试试调整，下面这句话，可以计算sub_window所有像素中与第m种颜色相近的个数。&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;power&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sub_window&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;colors&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;epsilon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;epsilon&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;至此，唯一的问题就变成了如何事先知道六种颜色的rgb值。由于我们这种方法非常受光线的影响，可能下午三点的rgb值到了下午五点就不好用了，因此我们需要一个快捷的获取六种rgb值的方法。&lt;/p&gt;
+
+&lt;p&gt;我的做法是把魔方的六种颜色按照固定顺序展示在同一面上，然后尽量摆正，让小方块里全是同一种颜色，然后写一个代码自动获取六种颜色的均值，并存储即可，如图&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/rubik-4.png&quot; alt=&quot;rubik-4&quot; class=&quot;shadow&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;获取到的颜色为&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/rubik-5.png&quot; alt=&quot;rubik-5&quot; class=&quot;shadow&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以看出，这次获取到的颜色已经与之前有不同了。接下来使用&lt;code class=&quot;highlighter-rouge&quot;&gt;np.save&lt;/code&gt;将六种颜色保存起来即可。&lt;/p&gt;
+
+&lt;h2 id=&quot;魔方朝向&quot;&gt;魔方朝向&lt;/h2&gt;
+
+&lt;p&gt;除了NXT机器人和颜色获取之外，再有值得一提的就是魔方朝向了。kociemba的输出是一个如下的字符串&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;F R' L' B' L' D' F U' D2 B2 R' U L2 U2 F2 B2 R2 B2 U2 B2 U'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;六个子母分别代表六个面，正常是顺时针90度，带&lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt;是逆时针90度，带&lt;code class=&quot;highlighter-rouge&quot;&gt;2&lt;/code&gt;是180度。&lt;/p&gt;
+
+&lt;p&gt;我们的机器人只能拧底下的面，因此如果需要拧别的面，就需要先把那一面挪到底下，这就要求机器人能够做到两件事：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;时刻清楚每一面的位置&lt;/li&gt;
+  &lt;li&gt;能够把任意一面挪到底下&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;对于第一件事，如果熟悉&lt;a href=&quot;https://zh.wikipedia.org/wiki/%E7%BD%AE%E6%8F%9B&quot;&gt;置换&lt;/a&gt;的概念，则不难实现，如果不熟悉，直接看下面的代码，应该也能理解&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;position&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'U'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'R'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'F'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'D'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'L'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'B'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# 初始朝向&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;position&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;position&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]]&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# 机械臂翻转魔方时调整朝向&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;至于&lt;code class=&quot;highlighter-rouge&quot;&gt;URFDLB&lt;/code&gt;这个顺序，以及他们的具体意义，可以参考下图&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;             |************|
+             |*U1**U2**U3*|
+             |************|
+             |*U4**U5**U6*|
+             |************|
+             |*U7**U8**U9*|
+             |************|
+ ************|************|************|************
+ *L1**L2**L3*|*F1**F2**F3*|*R1**R2**R3*|*B1**B2**B3*
+ ************|************|************|************
+ *L4**L5**L6*|*F4**F5**F6*|*R4**R5**R6*|*B4**B5**B6*
+ ************|************|************|************
+ *L7**L8**L9*|*F7**F8**F9*|*R7**R8**R9*|*B7**B8**B9*
+ ************|************|************|************
+             |************|
+             |*D1**D2**D3*|
+             |************|
+             |*D4**D5**D6*|
+             |************|
+             |*D7**D8**D9*|
+             |************|
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;详情在&lt;a href=&quot;https://github.com/muodov/kociemba&quot;&gt;kociemba的主页&lt;/a&gt;上。&lt;/p&gt;
+
+&lt;p&gt;对于第二件事，想要把某个面挪到底下，只要机器人能够知道这个面现在在哪，则挪过去的动作可以提前写好，一共才六种情况。&lt;/p&gt;
+
+&lt;h2 id=&quot;示例代码&quot;&gt;示例代码&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://gist.github.com/AlanXue1997/95d1c8af8bf3179bb444ba82f80d17a5&quot;&gt;motors.py&lt;/a&gt;是里面实现了控制机器人所需的方法，目前托管在GitHub Gist上。&lt;/p&gt;
+
+&lt;p&gt;我没有将所有代码直接放在一个github仓库内，是因为我的这份代码别人直接拿来是&lt;strong&gt;一定用不了&lt;/strong&gt;的，尤其是图像的部分。当然，如果有人想要参考的话，也欢迎留言告诉我。&lt;/p&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><category term="NXT" /><category term="python" /><category term="魔方" /><summary type="html">前言 很久以前就知道LEGO-NXT可以解魔方，但网上最经典的解决方法需要用到RGB模块，这个模块在机器人套装中没有，单独购买还挺贵。除此之外，也能见到有些人用手机来识别魔方的颜色，但由于自己当时编程能力有限，也就没有去做。</summary></entry><entry><title type="html">使用python控制LEGO-NXT（Win10）</title><link href="http://localhost:4000/2018/08/16/nxt-python.html" rel="alternate" type="text/html" title="使用python控制LEGO-NXT（Win10）" /><published>2018-08-16T00:00:00+08:00</published><updated>2018-08-16T00:00:00+08:00</updated><id>http://localhost:4000/2018/08/16/nxt-python</id><content type="html" xml:base="http://localhost:4000/2018/08/16/nxt-python.html">&lt;h1 id=&quot;前言&quot;&gt;前言&lt;/h1&gt;
 
 &lt;p&gt;LEGO NXT官方的编程语言是&lt;a href=&quot;https://en.wikipedia.org/wiki/Lego_Mindstorms_NXT#NXT-G&quot;&gt;NXT-G&lt;/a&gt;，这个语言是基于图形界面的，设计的非常适合不熟悉编程的人群使用，然而如果想编写一些较为复杂的程序，这门语言就显得及其繁杂了。因为这门语言相当于在画程序流程图，当分支变多了之后，可读性会非常差。&lt;/p&gt;
 
@@ -88,7 +318,276 @@
 
 &lt;p&gt;此时右下角应该已经不能“弹出该设备”，但MINDSTORMS NXT 2.0仍然能正常工作。&lt;/p&gt;
 
-&lt;p&gt;至此，我的电脑中&lt;code class=&quot;highlighter-rouge&quot;&gt;spin.py&lt;/code&gt;已经能够成功运行。&lt;/p&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><category term="NXT" /><category term="python" /><category term="配环境" /><summary type="html">前言 LEGO NXT官方的编程语言是NXT-G，这个语言是基于图形界面的，设计的非常适合不熟悉编程的人群使用，然而如果想编写一些较为复杂的程序，这门语言就显得及其繁杂了。因为这门语言相当于在画程序流程图，当分支变多了之后，可读性会非常差。</summary></entry><entry><title type="html">Alan的Python笔记</title><link href="http://localhost:4000/2018/07/23/alan-Python.html" rel="alternate" type="text/html" title="Alan的Python笔记" /><published>2018-07-23T00:00:00+08:00</published><updated>2018-07-23T00:00:00+08:00</updated><id>http://localhost:4000/2018/07/23/alan-Python</id><content type="html" xml:base="http://localhost:4000/2018/07/23/alan-Python.html">&lt;p class=&quot;warning&quot;&gt;这是个笔记，并非教程。&lt;/p&gt;
+&lt;p&gt;至此，我的电脑中&lt;code class=&quot;highlighter-rouge&quot;&gt;spin.py&lt;/code&gt;已经能够成功运行。&lt;/p&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><category term="NXT" /><category term="python" /><category term="配环境" /><summary type="html">前言 LEGO NXT官方的编程语言是NXT-G，这个语言是基于图形界面的，设计的非常适合不熟悉编程的人群使用，然而如果想编写一些较为复杂的程序，这门语言就显得及其繁杂了。因为这门语言相当于在画程序流程图，当分支变多了之后，可读性会非常差。</summary></entry><entry><title type="html">构建自己的饭店查询API</title><link href="http://localhost:4000/2018/07/30/swagger.html" rel="alternate" type="text/html" title="构建自己的饭店查询API" /><published>2018-07-30T00:00:00+08:00</published><updated>2018-07-30T00:00:00+08:00</updated><id>http://localhost:4000/2018/07/30/swagger</id><content type="html" xml:base="http://localhost:4000/2018/07/30/swagger.html">&lt;h1 id=&quot;前言&quot;&gt;前言&lt;/h1&gt;
+
+&lt;p&gt;夏季学期选了一门《认知服务设计与工程》，上到最后都不清楚这门课的名字到底是什么意思。不过课上学的东西倒是都很有意思，看起来很酷。&lt;/p&gt;
+
+&lt;p&gt;这篇博文主要记录此课程的一项作业的完成过程，要求为&lt;em&gt;使用Yelp API构建一个能够显示一个饭店列表（包括名字、地址、电话）的聊天机器人&lt;/em&gt;&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;&lt;strong&gt;如果你只是想知道怎样快速写一个API出来，请直接跳到&lt;a href=&quot;#swagger&quot;&gt;Swagger&lt;/a&gt;部分。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;api-kg&quot;&gt;API-KG&lt;/h1&gt;
+
+&lt;p class=&quot;info&quot;&gt;提示：这个网址可能已经失效，不过这个步骤完全可以跳过&lt;/p&gt;
+
+&lt;p&gt;API-KG的全称为API Knowledge Graph，这个名字我也不太清楚具体是什么意思。反正老师提供了一个&lt;a href=&quot;http://apikg.ngrok.io/api/docs/&quot;&gt;网址&lt;/a&gt;（这个网址只有下午1点~9点能使用，且搜不到），里面有一些功能，下面介绍我用到的&lt;/p&gt;
+
+&lt;h2 id=&quot;查询相似api&quot;&gt;查询相似API&lt;/h2&gt;
+
+&lt;p&gt;该方法可以根据你的（自然语言）描述来查找最相关的API，比如对于此本作业，点击Try it out&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/swagger-1.png&quot; alt=&quot;swagger-1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;然后输入”Building a chatbot that uses Yelp API to show list of eateries “，点击Execute即可&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/swagger-2.png&quot; alt=&quot;swagger-2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以看到，一共搜出来了5个API，其中第四个是&lt;strong&gt;Yelp V3&lt;/strong&gt;，这就是我们想要用的API，记住它的id，后面的操作需要用到&lt;/p&gt;
+
+&lt;h2 id=&quot;查询方法method&quot;&gt;查询方法（Method）&lt;/h2&gt;
+
+&lt;p&gt;现在我们找到了我们想要的API，但是不知道具体应该使用这个API的哪个方法，这就用到了下面的方法查询&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/swagger-3.png&quot; alt=&quot;swagger-3&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以看到，一共搜出了5个方法，其中最后一个比较像这次作业需要的，记下它的id，下一步使用&lt;/p&gt;
+
+&lt;h2 id=&quot;查询表达expression&quot;&gt;查询表达（Expression）&lt;/h2&gt;
+
+&lt;p&gt;这个查询就是API-KG的精髓所在了，它能够根据你给的方法，返回给你一系列的（自然语言）表达，方便你后面训练自然语言机器人。比如对于本次作业，输入上上面查询方法找到的id&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/swagger-4.png&quot; alt=&quot;swagger-4&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以看到，返回的数据里面有许多许多询问饭店的表达。&lt;/p&gt;
+
+&lt;p&gt;至此，API-KG的使用就结束了&lt;/p&gt;
+
+&lt;h1 id=&quot;yelp-api&quot;&gt;Yelp API&lt;/h1&gt;
+
+&lt;p&gt;饭店的信息通过&lt;a href=&quot;https://www.yelp.com/developers&quot;&gt;Yelp&lt;/a&gt;的&lt;a href=&quot;https://www.yelp.com/developers/documentation/v3/business_search&quot;&gt;Business Search Endpoint&lt;/a&gt;来获得，它提供了一个可以根据一些参数查询饭店的API，使用起来非常方便。接下来将介绍使用该API的步骤。&lt;/p&gt;
+
+&lt;h2 id=&quot;注册&quot;&gt;注册&lt;/h2&gt;
+
+&lt;p&gt;首先需要在Yelp进行注册。在注册完成后，需要在&lt;a href=&quot;https://www.yelp.com/developers/v3/manage_app&quot;&gt;Manage App&lt;/a&gt;页面建立一个APP，里面的信息不是很重要，重要的是建立完成后，系统会分配一个&lt;strong&gt;API key&lt;/strong&gt;，这个key在使用API时要用到。&lt;/p&gt;
+
+&lt;h2 id=&quot;测试&quot;&gt;测试&lt;/h2&gt;
+
+&lt;p&gt;使用&lt;a href=&quot;https://en.wikipedia.org/wiki/CURL&quot;&gt;curl&lt;/a&gt;或&lt;a href=&quot;https://www.getpostman.com/&quot;&gt;Postman&lt;/a&gt;都可以测试API。相较而言，Postman更加方便，下面将使用Postman进行。&lt;/p&gt;
+
+&lt;p&gt;我们查询用到的Business Search Endpoint的地址为&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;https://api.yelp.com/v3/businesses
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;其查询需要的参数在&lt;a href=&quot;https://www.yelp.com/developers/documentation/v3/business_search&quot;&gt;文档&lt;/a&gt;中有详细介绍，但我们此次只需用到两个，分别是location和term，表示查询的地点和类型；除此之外，我们还必须&lt;strong&gt;在headers里面加上Authorization字段&lt;/strong&gt;，其内容就是之前系统分配的API key，如图所示&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/swagger-8.png&quot; alt=&quot;swagger-4&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;单机Send后，如果下方的返回信息Body有内容，则说明查询成功。&lt;/p&gt;
+
+&lt;p class=&quot;warning&quot;&gt;注意：有一些地址查询会报错，例如Beijing！这是正常现象。&lt;/p&gt;
+
+&lt;h1 id=&quot;witat&quot;&gt;Wit.at&lt;/h1&gt;
+
+&lt;p&gt;Wit.ai是一个&lt;strong&gt;非常方便&lt;/strong&gt;的自然语言机器人构建平台，你所要做的，就是新建一个App，之后不断地给出表达和表达中包含的实体即可&lt;/p&gt;
+
+&lt;h2 id=&quot;训练&quot;&gt;训练&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/swagger-5.png&quot; alt=&quot;swagger-5&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;如图，在输入框内打入一段表达（如果你完成了API-KG的内容，则可以直接使用最终查到的那些表达），然后通过&lt;em&gt;Add a new entity&lt;/em&gt;挑选出相应的实体，对于本次实验，我挑出了location、term、intent三个实体&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;实体&lt;/th&gt;
+      &lt;th&gt;说明&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;wit/location&lt;/td&gt;
+      &lt;td&gt;地点，是wit中自带的，从第一个之后，就基本不需要你自己来挑选了，他自动挑的就非常准&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;term&lt;/td&gt;
+      &lt;td&gt;食物类别，wit里本身没有，因此从第一个后，如果遇见相同的一定能自动认出来，但不同的，必须在数据很多了之后才有可能认出来&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;intent&lt;/td&gt;
+      &lt;td&gt;这个表达想问什么，实际上在本次作业里没有用，当你的机器人需要处理多种查询（多种intent）的时候，它能够起到分类的作用&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;测试-1&quot;&gt;测试&lt;/h2&gt;
+
+&lt;p&gt;当你差不多输入了一二十个数据后，这个机器人就初步能用了，点击右上角的&lt;strong&gt;Settings&lt;/strong&gt;，里面有一个cURL的例子，在这个例子的上面输入一句话，下面会生成对应的cURL语句，你可以直接使用。但我是使用Postman进行测试的，因此需要稍微调整一下格式，调整前后如图所示&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/swagger-6.png&quot; alt=&quot;swagger-6&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/swagger-7.png&quot; alt=&quot;swagger-7&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;如果返回的结果类似下面这样，就说明成功了。&lt;/p&gt;
+
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;_text&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Sushi near Tokyo&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;entities&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;term&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;confidence&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.96857372653781&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;value&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;sushi&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;value&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;location&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;confidence&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.93629&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;value&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Tokyo&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;resolved&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;values&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Tokyo Prefecture&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;grain&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;region&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;resolved&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;timezone&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Asia/Tokyo&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;coords&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;lat&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;35.689498901367&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;long&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;139.69171142578&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;external&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;geonames&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;1850144&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Tokyo&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;grain&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;locality&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;resolved&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;timezone&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Asia/Tokyo&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;coords&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;lat&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;35.689498901367&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;long&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;139.69171142578&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;external&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;geonames&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;1850147&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;intent&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;confidence&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;value&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Search4Eateries&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;msg_id&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;0HMAPppt5JDbaWf3L&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;swagger&quot;&gt;Swagger&lt;/h1&gt;
+
+&lt;p&gt;Swagger具体是什么，包括哪些我也不太清楚。因为我们用到的实际上只是&lt;a href=&quot;https://editor.swagger.io/&quot;&gt;Swagger Editor&lt;/a&gt;，它能够帮你做到先写好文档，再去写代码。按照课上老师的说法，这样的好处是你先做出了客户能看到的东西，这样即使客户不满意，无非就是改改文档，不费时不费力，对双方都有好处。&lt;/p&gt;
+
+&lt;p&gt;这个东西具体的写法我没有细学，只能是照猫画虎，生搬硬套了，下面是我最终的代码&lt;/p&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;swagger&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;2.0&quot;&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;API for searching eateries&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;API for searching eateries&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;version&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;1.0.0&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;host&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;localhost:5000&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;basePath&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;/v1&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;schemes&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;http&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;paths&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;s&quot;&gt;/search&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;summary&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;get the eateries information.&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;parameters&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;query&lt;/span&gt;
+          &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;expression&lt;/span&gt;
+          &lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;a nature language expression.&lt;/span&gt;
+          &lt;span class=&quot;na&quot;&gt;required&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;true&lt;/span&gt;
+          &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;string&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;get the eateries information.&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;produces&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;application/json&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;responses&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+          &lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;OK&lt;/span&gt;
+          &lt;span class=&quot;na&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;string&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;400&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+          &lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Bad request.&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;401&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+          &lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Authorization information is missing or invalid.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;在写完之后，如果在线编辑器没有报错，则选择&lt;code class=&quot;highlighter-rouge&quot;&gt;File-&amp;gt;Save as YAML&lt;/code&gt;将其保存成YAML即可。&lt;/p&gt;
+
+&lt;h1 id=&quot;flask&quot;&gt;Flask&lt;/h1&gt;
+
+&lt;p&gt;上一步完成之后，相当于完成了API的文档，至于代码，可以有非常多的选择。这里，课上要求使用Flask来实现，因为这个框架相对轻巧易学。&lt;/p&gt;
+
+&lt;p&gt;使用&lt;a href=&quot;https://github.com/guokr/swagger-py-codegen&quot;&gt;swagger-py-codegen&lt;/a&gt;，即可自动根据yaml文件生成一个app，用法可以直接参考github主页，非常简单。话说这个东西的名字真的是难记，每次我都要搜索老半天才能找到。。。&lt;/p&gt;
+
+&lt;p&gt;新建的app目录结构如下，运行时直接Run最下方的&lt;code class=&quot;highlighter-rouge&quot;&gt;__init__.py&lt;/code&gt;即可。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/swagger-9.png&quot; alt=&quot;swagger-9&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我们只需要修改&lt;code class=&quot;highlighter-rouge&quot;&gt;search.py&lt;/code&gt;即可。这个文件初始化时有一个get方法，其返回值就是API的输出。内部需要做的事就是根据args参数，再调用之前已经准备好的API，给出最终的查询结果。中间无非就是一些Flask进行HTTP访问的常规操作，不是本文的重点，就不细说了。&lt;/p&gt;
+
+&lt;p&gt;在这里给出&lt;code class=&quot;highlighter-rouge&quot;&gt;search.py&lt;/code&gt;最终的代码&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# -*- coding: utf-8 -*-&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;__future__&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;absolute_import&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;print_function&lt;/span&gt;
+
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;flask&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;g&lt;/span&gt;
+
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Resource&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;..&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;schemas&lt;/span&gt;
+
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;requests&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Search&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Resource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;expression&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;g&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'expression'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;# result = request.get('https://api.wit.ai/message?v=')&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requests&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'https://api.wit.ai/message'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'v'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'20180730'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'q'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;expression&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'Authorization'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'Bearer 5******************************G'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;entities&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'entities'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'location'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;entities&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;location&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'entities'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'location'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'value'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'Missing location!'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'term'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;entities&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;term&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'entities'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'term'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'value'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'location'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;location&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'term'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;term&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'location'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;location&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;n&quot;&gt;r2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requests&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'https://api.yelp.com/v3/businesses/search'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'Authorization'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'Bearer Eq****************************************************************************************************************************Yx'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;data2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'error'&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;businesses&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'businesses'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;# eateries_list = [{'name':business['name'], 'address':business['display_address'], 'phone number':business['phone']} for business in businesses]&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;eateries_list&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'name'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;business&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'name'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'address'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;business&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'location'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'phone'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;business&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'phone'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;business&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;businesses&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;eateries_list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;run-on-server&quot;&gt;Run on Server&lt;/h1&gt;
+
+&lt;p&gt;我在服务器上运行的方式十分简单，就是使用&lt;code class=&quot;highlighter-rouge&quot;&gt;pscp&lt;/code&gt;命令（可能需安装Putty）直接把代码上传到VPS上，然后在VPS上运行即可。如果不能直接访问，可以看一看防火墙的设置，开放一下端口。&lt;/p&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><category term="Swagger" /><category term="API" /><category term="Flask" /><category term="Python" /><summary type="html">前言 夏季学期选了一门《认知服务设计与工程》，上到最后都不清楚这门课的名字到底是什么意思。不过课上学的东西倒是都很有意思，看起来很酷。 这篇博文主要记录此课程的一项作业的完成过程，要求为使用Yelp API构建一个能够显示一个饭店列表（包括名字、地址、电话）的聊天机器人</summary></entry><entry><title type="html">Alan的Python笔记</title><link href="http://localhost:4000/2018/07/23/alan-Python.html" rel="alternate" type="text/html" title="Alan的Python笔记" /><published>2018-07-23T00:00:00+08:00</published><updated>2018-07-23T00:00:00+08:00</updated><id>http://localhost:4000/2018/07/23/alan-Python</id><content type="html" xml:base="http://localhost:4000/2018/07/23/alan-Python.html">&lt;p class=&quot;warning&quot;&gt;这是个笔记，并非教程。&lt;/p&gt;
 
 &lt;h1 id=&quot;前言&quot;&gt;前言&lt;/h1&gt;
 
@@ -185,6 +684,12 @@
 (5, 31)
 (11, 31)
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;open-cv&quot;&gt;Open-CV&lt;/h1&gt;
+
+&lt;h2 id=&quot;切换版本&quot;&gt;切换版本&lt;/h2&gt;
+
+&lt;p&gt;首先在这个&lt;a href=&quot;https://www.lfd.uci.edu/~gohlke/pythonlibs/#opencv&quot;&gt;网站&lt;/a&gt;找到想要的版本，下载&lt;code class=&quot;highlighter-rouge&quot;&gt;whl&lt;/code&gt;文件，之后执行&lt;code class=&quot;highlighter-rouge&quot;&gt;pip install xxx.whl&lt;/code&gt;即可。&lt;/p&gt;
 
 &lt;h1 id=&quot;scikit-learn&quot;&gt;scikit-learn&lt;/h1&gt;
 
@@ -989,335 +1494,4 @@ MAIN PROC
 	INVOKE  ExitProcess, 0
 	MAIN ENDP
 	END MAIN
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><category term="汇编" /><summary type="html">通常学一门新语言，都是先写一个汉诺塔熟悉这种语言的函数时如何构造的。 但汇编学了很久都没有学到过程，所以初次尝试只是写了个冒泡排序。 上节课老师终于讲了一下如何写PROC，CALL，在试了几个简单的类似两个整数相加这样的函数之后，果断开始尝试用汇编写汉诺塔。</summary></entry><entry><title type="html">Swift初次尝试</title><link href="http://localhost:4000/2016/09/07/swift1.html" rel="alternate" type="text/html" title="Swift初次尝试" /><published>2016-09-07T00:00:00+08:00</published><updated>2016-09-07T00:00:00+08:00</updated><id>http://localhost:4000/2016/09/07/swift1</id><content type="html" xml:base="http://localhost:4000/2016/09/07/swift1.html">&lt;p&gt;最近开始学习IOS开发，先看了看Swift的一些基础知识，写了一个计算汉诺塔的小程序。还是经典的递归算法，算是递归的入门程序了。&lt;/p&gt;
-
-&lt;!--more--&gt;
-
-&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;N&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-
-&lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;show&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt;
-    &lt;span class=&quot;nf&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;[&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]]{&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;=&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot; &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;-&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;|&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;+&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;-&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;=&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot; &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;  &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;nf&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;6*&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;-&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;nf&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;move&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Character&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Character&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;p&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
-    
-    &lt;span class=&quot;k&quot;&gt;switch&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;a&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;b&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;switch&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;a&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;b&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;nf&quot;&gt;show&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;moveAtoC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Character&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Character&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Character&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;nf&quot;&gt;move&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;nf&quot;&gt;moveAtoC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;nf&quot;&gt;move&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;nf&quot;&gt;moveAtoC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;nf&quot;&gt;show&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;nf&quot;&gt;moveAtoC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;a&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;b&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;c&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;改变N的值，即可得到不同的结果。当N=3时，输出如下：&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[0]
-  -+-       |        |     
- --+--      |        |     
-&lt;span class=&quot;gd&quot;&gt;---+---     |        |     
--------------------------
-&lt;/span&gt;[1]
-   |        |        |     
- --+--      |        |     
-&lt;span class=&quot;gd&quot;&gt;---+---     |       -+-    
--------------------------
-&lt;/span&gt;[2]
-   |        |        |     
-   |        |        |     
-&lt;span class=&quot;gd&quot;&gt;---+---   --+--     -+-    
--------------------------
-&lt;/span&gt;[3]
-   |        |        |     
-   |       -+-       |     
-&lt;span class=&quot;gd&quot;&gt;---+---   --+--      |     
--------------------------
-&lt;/span&gt;[4]
-   |        |        |     
-   |       -+-       |     
-   |      --+--   ---+---  
-&lt;span class=&quot;gd&quot;&gt;-------------------------
-&lt;/span&gt;[5]
-   |        |        |     
-   |        |        |     
-  -+-     --+--   ---+---  
-&lt;span class=&quot;gd&quot;&gt;-------------------------
-&lt;/span&gt;[6]
-   |        |        |     
-   |        |      --+--   
-  -+-       |     ---+---  
-&lt;span class=&quot;gd&quot;&gt;-------------------------
-&lt;/span&gt;[7]
-   |        |       -+-    
-   |        |      --+--   
-   |        |     ---+---  
-&lt;span class=&quot;gd&quot;&gt;-------------------------
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;现在还没有感受到Swift在语法方面的一些改变到底有什么用意，内部的东西应该是比较新的技术。&lt;/p&gt;
-
-&lt;p&gt;学到现在，感受到语言的发展跟硬件的发展是想关联的，从最开始学习16位的Pascal，到现在学习64位的Swift，感觉这些语言越来越不拘小节，就比如Array，里面有很多参数，而且还必须是可变长度的。它应该已经不是简单的队列了，现在的新语言恐怕已经不需要自己去写那些简单的数据结构比如链表这样的结构了。&lt;/p&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><summary type="html">最近开始学习IOS开发，先看了看Swift的一些基础知识，写了一个计算汉诺塔的小程序。还是经典的递归算法，算是递归的入门程序了。</summary></entry><entry><title type="html">汇编初次尝试</title><link href="http://localhost:4000/2016/09/07/masm1.html" rel="alternate" type="text/html" title="汇编初次尝试" /><published>2016-09-07T00:00:00+08:00</published><updated>2016-09-07T00:00:00+08:00</updated><id>http://localhost:4000/2016/09/07/masm1</id><content type="html" xml:base="http://localhost:4000/2016/09/07/masm1.html">&lt;p&gt;以前接触语言的顺序是Pascal→C→java/Python→MATLAB，是越来越先进的语言，这是第一次倒过来，学了更加底层的汇编。&lt;/p&gt;
-
-&lt;p&gt;学更高级的语言，总是能发现很多事情更加方便了，写代码的速度提高了不少，许多细节都不需要自己去考虑，但是损失了一定的性能。&lt;/p&gt;
-
-&lt;!--more--&gt;
-
-&lt;p&gt;这次学了个底层的汇编，最大的感觉就是总能恍然大悟，原来是这个样子啊。比如不管是C还是java，都有++和–操作，在汇编里就对应着INC和DEC；明白了CPU内部究竟是如何工作的；程序是如何知道一段内存是int还是double等。&lt;/p&gt;
-
-&lt;p&gt;开始的时候真的是一脸懵逼啊。&lt;/p&gt;
-
-&lt;p&gt;这跟平时学语言的套路不一样啊。&lt;/p&gt;
-
-&lt;p&gt;没有for、while循环，不讲if语句，上来直接一大套寄存器，感觉智力受到了嘲讽。&lt;/p&gt;
-
-&lt;div class=&quot;divider&quot;&gt;&lt;/div&gt;
-
-&lt;h1 id=&quot;尝试&quot;&gt;尝试&lt;/h1&gt;
-
-&lt;p&gt;上节课老师给演示了一下对一个数组去绝对值，终于知道汇编的循环怎么写了，赶紧回来就试着写了个&lt;a href=&quot;https://zh.wikipedia.org/zh-cn/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F&quot;&gt;冒泡排序&lt;/a&gt;。&lt;/p&gt;
-
-&lt;h3 id=&quot;思路&quot;&gt;思路&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://zh.wikipedia.org/zh-cn/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F&quot;&gt;冒泡排序&lt;/a&gt;的思路还是很简单粗暴的，如果看维基百科实在是理解不了，可以看看这个视频——&lt;a href=&quot;http://v.youku.com/v_show/id_XMzMyOTAyMzQ0.html?from=s1.8-1-1.2&amp;amp;spm=a2h0k.8191407.0.0&quot;&gt;舞动的排序算法&lt;/a&gt;，非常有创意，两个人在原地跳舞表示不交换，走出来跳舞表示交换。但视频中有一点小错误，就是第一次循环时，a[8]和a[9]都转身了，实际上应该只有a[9]转身。&lt;/p&gt;
-
-&lt;h3 id=&quot;汇编实现&quot;&gt;汇编实现&lt;/h3&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;寄存器&lt;/th&gt;
-      &lt;th&gt;作用&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;EBX&lt;/td&gt;
-      &lt;td&gt;数组第一个元素的地址&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;ECX&lt;/td&gt;
-      &lt;td&gt;循环计数器，表示这是倒数第几次循环，等于1时是最后一次&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;ESI&lt;/td&gt;
-      &lt;td&gt;记录下标，相当于c语言中常用的i，j&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;EAX&lt;/td&gt;
-      &lt;td&gt;在比较/交换两个数时使用&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;排序部分的步骤如下&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	ECX = COUNT-1  		;需要循环COUNT-1次
-	ESI = 0          	;
-MP1:				;开始第一层循环
-	将ECX、ESI压栈		;使第二层循环不影响第一层的参数
-	ECX' = COUNT-ESI-1	;需要循环COUNT-ESI-1次
-	ESI' = 0		;
-MP2:				;开始第二层循环
-	EAX = A[ESI']		;
-	比较A[ESI'+1]和EAX	;
-	如果负，跳转MPJ		;
-	交换A[ESI']和A[ESI'+1]	;
-MPJ:				;
-	ESI++			;
-	LOOP MP2		;
-				;
-	将EXC、ESI从栈中提出	;注意后进先出
-	ESI++			;
-	LOOP MP1		;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;代码&quot;&gt;代码&lt;/h3&gt;
-
-&lt;p&gt;ASM32.INC&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;.386
-.MODEL FLAT, STDCALL
-.STACK 1024
-
-OPTION casemap : none
-
-INCLUDELIB &quot;D:\...\MSVCRT.LIB&quot;;需要换成自己的地址
-
-chr$ MACRO any_text : VARARG
-LOCAL txtname
-.data
-txtname db any_text, 0
-align 4
-.code
-EXITM &amp;lt;OFFSET txtname&amp;gt;
-ENDM
-
-printf		PROTO C : DWORD, : VARARG
-scanf		PROTO C : DWORD, : VARARG
-getchar		PROTO C
-ExitProcess PROTO : DWORD
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;*.asm&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;INCLUDE	ASM32.INC
-
-COUNT=5;改成需要排序的数字的个数
-
-.DATA
-	A	SDWORD	COUNT DUP(?)
-.CODE
-	main PROC	
-		LEA		EBX,A
-		MOV		ECX,COUNT 
-		MOV		ESI,0
-	L1: PUSH	ECX 
-		INVOKE	scanf,chr$(&quot;%d&quot;),ADDR[EBX+ESI*4]
-		POP		ECX
-		INC		ESI
-		LOOP	L1 
-
-		LEA		EBX,A
-		MOV		ECX,COUNT-1
-		MOV		ESI,0
-	MP1:PUSH	ECX
-		PUSH	ESI 
-		
-		MOV		ECX,COUNT-1
-		SUB		ECX,ESI
-		MOV		ESI,0
-	MP2:MOV		EAX,[EBX+ESI*4]
-		CMP		[EBX+ESI*4+4],EAX
-		JNS		MPJ 
-		XCHG	EAX,[EBX+ESI*4+4]
-		MOV		[EBX+ESI*4],EAX
-	MPJ:INC		ESI
-		LOOP	MP2 
-
-		POP		ESI
-		POP		ECX
-		INC		ESI
-		LOOP	MP1
-		
-
-		LEA		EBX,A
-		MOV		ECX,COUNT 
-		MOV		ESI,0
-	L2:	PUSH	ECX 
-		INVOKE	printf,chr$(&quot;%d &quot;),DWORD PTR [EBX+ESI*4]
-		POP		ECX
-		INC		ESI
-		LOOP	L2
-
-		INVOKE  ExitProcess,0
-	main ENDP
-
-END main
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h1 id=&quot;2018年5月2日更新&quot;&gt;2018年5月2日更新&lt;/h1&gt;
-
-&lt;p&gt;近些天写编译原理，发现汇编怎么配环境已经忘得差不多了。之前可能误删了masm32文件夹，导致找不到&lt;code class=&quot;highlighter-rouge&quot;&gt;MSVCRT.LIB&lt;/code&gt;文件了，最终只能重新安装了masm32，最终使用新的LIB文件。&lt;/p&gt;
-
-&lt;p&gt;VS配环境的步骤为：&lt;/p&gt;
-&lt;blockquote&gt;
-  &lt;ol&gt;
-    &lt;li&gt;新建空项目&lt;/li&gt;
-    &lt;li&gt;在工程上右键，生成依赖项→生成自定义，选择masm&lt;/li&gt;
-    &lt;li&gt;新建.asm文件为汇编文件，.inc文件为头文件（注意顺序）&lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/blockquote&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><summary type="html">以前接触语言的顺序是Pascal→C→java/Python→MATLAB，是越来越先进的语言，这是第一次倒过来，学了更加底层的汇编。 学更高级的语言，总是能发现很多事情更加方便了，写代码的速度提高了不少，许多细节都不需要自己去考虑，但是损失了一定的性能。</summary></entry></feed>
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><category term="汇编" /><summary type="html">通常学一门新语言，都是先写一个汉诺塔熟悉这种语言的函数时如何构造的。 但汇编学了很久都没有学到过程，所以初次尝试只是写了个冒泡排序。 上节课老师终于讲了一下如何写PROC，CALL，在试了几个简单的类似两个整数相加这样的函数之后，果断开始尝试用汇编写汉诺塔。</summary></entry></feed>

@@ -113,6 +113,12 @@ print(c.shape)
 (11, 31)
 ```
 
+# Open-CV
+
+## 切换版本
+
+首先在这个[网站](https://www.lfd.uci.edu/~gohlke/pythonlibs/#opencv)找到想要的版本，下载```whl```文件，之后执行```pip install xxx.whl```即可。
+
 # scikit-learn
 
 ## SVM

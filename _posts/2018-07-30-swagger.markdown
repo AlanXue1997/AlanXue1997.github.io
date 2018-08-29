@@ -1,0 +1,269 @@
+---
+layout: article
+title: 构建自己的饭店查询API
+mathjax: true
+tags: Swagger API Flask Python
+key: 2018-07-30-swagger
+published: true
+---
+
+# 前言
+
+夏季学期选了一门《认知服务设计与工程》，上到最后都不清楚这门课的名字到底是什么意思。不过课上学的东西倒是都很有意思，看起来很酷。
+
+这篇博文主要记录此课程的一项作业的完成过程，要求为*使用Yelp API构建一个能够显示一个饭店列表（包括名字、地址、电话）的聊天机器人*
+
+<!--more-->
+
+**如果你只是想知道怎样快速写一个API出来，请直接跳到[Swagger](#swagger)部分。**
+
+# API-KG
+
+提示：这个网址可能已经失效，不过这个步骤完全可以跳过
+{:.info}
+
+API-KG的全称为API Knowledge Graph，这个名字我也不太清楚具体是什么意思。反正老师提供了一个[网址](http://apikg.ngrok.io/api/docs/)（这个网址只有下午1点~9点能使用，且搜不到），里面有一些功能，下面介绍我用到的
+
+## 查询相似API
+
+该方法可以根据你的（自然语言）描述来查找最相关的API，比如对于此本作业，点击Try it out
+
+![swagger-1](/assets/images/swagger-1.png)
+
+然后输入"Building a chatbot that uses Yelp API to show list of eateries "，点击Execute即可
+
+![swagger-2](/assets/images/swagger-2.png)
+
+可以看到，一共搜出来了5个API，其中第四个是**Yelp V3**，这就是我们想要用的API，记住它的id，后面的操作需要用到
+
+## 查询方法（Method）
+
+现在我们找到了我们想要的API，但是不知道具体应该使用这个API的哪个方法，这就用到了下面的方法查询
+
+![swagger-3](/assets/images/swagger-3.png)
+
+可以看到，一共搜出了5个方法，其中最后一个比较像这次作业需要的，记下它的id，下一步使用
+
+## 查询表达（Expression）
+
+这个查询就是API-KG的精髓所在了，它能够根据你给的方法，返回给你一系列的（自然语言）表达，方便你后面训练自然语言机器人。比如对于本次作业，输入上上面查询方法找到的id
+
+![swagger-4](/assets/images/swagger-4.png)
+
+可以看到，返回的数据里面有许多许多询问饭店的表达。
+
+至此，API-KG的使用就结束了
+
+# Yelp API
+
+饭店的信息通过[Yelp](https://www.yelp.com/developers)的[Business Search Endpoint](https://www.yelp.com/developers/documentation/v3/business_search)来获得，它提供了一个可以根据一些参数查询饭店的API，使用起来非常方便。接下来将介绍使用该API的步骤。
+
+## 注册
+
+首先需要在Yelp进行注册。在注册完成后，需要在[Manage App](https://www.yelp.com/developers/v3/manage_app)页面建立一个APP，里面的信息不是很重要，重要的是建立完成后，系统会分配一个**API key**，这个key在使用API时要用到。
+
+## 测试
+
+使用[curl](https://en.wikipedia.org/wiki/CURL)或[Postman](https://www.getpostman.com/)都可以测试API。相较而言，Postman更加方便，下面将使用Postman进行。
+
+我们查询用到的Business Search Endpoint的地址为
+
+```
+https://api.yelp.com/v3/businesses
+```
+
+其查询需要的参数在[文档](https://www.yelp.com/developers/documentation/v3/business_search)中有详细介绍，但我们此次只需用到两个，分别是location和term，表示查询的地点和类型；除此之外，我们还必须**在headers里面加上Authorization字段**，其内容就是之前系统分配的API key，如图所示
+
+![swagger-4](/assets/images/swagger-8.png)
+
+单机Send后，如果下方的返回信息Body有内容，则说明查询成功。
+
+注意：有一些地址查询会报错，例如Beijing！这是正常现象。
+{:.warning}
+
+
+# Wit.at
+
+Wit.ai是一个**非常方便**的自然语言机器人构建平台，你所要做的，就是新建一个App，之后不断地给出表达和表达中包含的实体即可
+
+## 训练
+
+![swagger-5](/assets/images/swagger-5.png)
+
+如图，在输入框内打入一段表达（如果你完成了API-KG的内容，则可以直接使用最终查到的那些表达），然后通过*Add a new entity*挑选出相应的实体，对于本次实验，我挑出了location、term、intent三个实体
+
+|实体|说明|
+|-|-|
+|wit/location|地点，是wit中自带的，从第一个之后，就基本不需要你自己来挑选了，他自动挑的就非常准|
+|term|食物类别，wit里本身没有，因此从第一个后，如果遇见相同的一定能自动认出来，但不同的，必须在数据很多了之后才有可能认出来|
+|intent|这个表达想问什么，实际上在本次作业里没有用，当你的机器人需要处理多种查询（多种intent）的时候，它能够起到分类的作用|
+
+## 测试
+
+当你差不多输入了一二十个数据后，这个机器人就初步能用了，点击右上角的**Settings**，里面有一个cURL的例子，在这个例子的上面输入一句话，下面会生成对应的cURL语句，你可以直接使用。但我是使用Postman进行测试的，因此需要稍微调整一下格式，调整前后如图所示
+
+![swagger-6](/assets/images/swagger-6.png)
+
+![swagger-7](/assets/images/swagger-7.png)
+
+如果返回的结果类似下面这样，就说明成功了。
+
+```json
+{
+    "_text": "Sushi near Tokyo",
+    "entities": {
+        "term": [
+            {
+                "confidence": 0.96857372653781,
+                "value": "sushi",
+                "type": "value"
+            }
+        ],
+        "location": [
+            {
+                "confidence": 0.93629,
+                "value": "Tokyo",
+                "resolved": {
+                    "values": [
+                        {
+                            "name": "Tokyo Prefecture",
+                            "grain": "region",
+                            "type": "resolved",
+                            "timezone": "Asia/Tokyo",
+                            "coords": {
+                                "lat": 35.689498901367,
+                                "long": 139.69171142578
+                            },
+                            "external": {
+                                "geonames": "1850144"
+                            }
+                        },
+                        {
+                            "name": "Tokyo",
+                            "grain": "locality",
+                            "type": "resolved",
+                            "timezone": "Asia/Tokyo",
+                            "coords": {
+                                "lat": 35.689498901367,
+                                "long": 139.69171142578
+                            },
+                            "external": {
+                                "geonames": "1850147"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "intent": [
+            {
+                "confidence": 1,
+                "value": "Search4Eateries"
+            }
+        ]
+    },
+    "msg_id": "0HMAPppt5JDbaWf3L"
+}
+```
+
+# Swagger
+
+Swagger具体是什么，包括哪些我也不太清楚。因为我们用到的实际上只是[Swagger Editor](https://editor.swagger.io/)，它能够帮你做到先写好文档，再去写代码。按照课上老师的说法，这样的好处是你先做出了客户能看到的东西，这样即使客户不满意，无非就是改改文档，不费时不费力，对双方都有好处。
+
+这个东西具体的写法我没有细学，只能是照猫画虎，生搬硬套了，下面是我最终的代码
+
+```yaml
+swagger: "2.0"
+info:
+  title: API for searching eateries
+  description: API for searching eateries
+  version: 1.0.0
+host: localhost:5000
+basePath: /v1
+schemes:
+  - http
+paths:
+  /search:
+    get:
+      summary: get the eateries information.
+      parameters:
+        - in: query
+          name: expression
+          description: a nature language expression.
+          required: true
+          type: string
+      description: get the eateries information.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        400:
+          description: Bad request.
+        401:
+          description: Authorization information is missing or invalid.
+```
+
+在写完之后，如果在线编辑器没有报错，则选择```File->Save as YAML```将其保存成YAML即可。
+
+# Flask
+
+上一步完成之后，相当于完成了API的文档，至于代码，可以有非常多的选择。这里，课上要求使用Flask来实现，因为这个框架相对轻巧易学。
+
+使用[swagger-py-codegen](https://github.com/guokr/swagger-py-codegen)，即可自动根据yaml文件生成一个app，用法可以直接参考github主页，非常简单。话说这个东西的名字真的是难记，每次我都要搜索老半天才能找到。。。
+
+新建的app目录结构如下，运行时直接Run最下方的```__init__.py```即可。
+
+![swagger-9](/assets/images/swagger-9.png)
+
+我们只需要修改```search.py```即可。这个文件初始化时有一个get方法，其返回值就是API的输出。内部需要做的事就是根据args参数，再调用之前已经准备好的API，给出最终的查询结果。中间无非就是一些Flask进行HTTP访问的常规操作，不是本文的重点，就不细说了。
+
+在这里给出```search.py```最终的代码
+
+```python
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function
+
+from flask import request, g
+
+from . import Resource
+from .. import schemas
+
+import requests
+
+class Search(Resource):
+
+    def get(self):
+        expression = g.args['expression']
+        # result = request.get('https://api.wit.ai/message?v=')
+        r = requests.get('https://api.wit.ai/message', params={'v':'20180730','q':expression}, headers={'Authorization':'Bearer 5******************************G'})
+        data = r.json()
+        entities = data['entities']
+        if 'location' in entities:
+            location = data['entities']['location'][0]['value']
+        else:
+            return 'Missing location!', 200, None
+        if 'term' in entities:
+            term = data['entities']['term'][0]['value']
+            params = {'location': location, 'term': term}
+        else:
+            params = {'location': location}
+
+        r2 = requests.get('https://api.yelp.com/v3/businesses/search', params=params, headers={'Authorization': 'Bearer Eq****************************************************************************************************************************Yx'})
+        data2 = r2.json()
+        if 'error' in data2:
+            return data2, 200, None
+        businesses = data2['businesses']
+        # eateries_list = [{'name':business['name'], 'address':business['display_address'], 'phone number':business['phone']} for business in businesses]
+        eateries_list = [
+            {'name':business['name'], 'address':business['location'], 'phone':business['phone']} for
+            business in businesses]
+        return eateries_list, 200, None
+
+```
+
+# Run on Server
+
+我在服务器上运行的方式十分简单，就是使用```pscp```命令（可能需安装Putty）直接把代码上传到VPS上，然后在VPS上运行即可。如果不能直接访问，可以看一看防火墙的设置，开放一下端口。
