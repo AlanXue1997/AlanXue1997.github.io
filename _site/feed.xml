@@ -1,5 +1,224 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh-Hans"><generator uri="https://jekyllrb.com/" version="3.8.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="zh-Hans" /><updated>2018-08-29T14:01:52+08:00</updated><id>http://localhost:4000/</id><title type="html">Alan Xue’s blog</title><subtitle>Alan Xue's Blog
-</subtitle><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><entry><title type="html">LEGO-NXT解魔方</title><link href="http://localhost:4000/2018/08/27/nxt-rubik.html" rel="alternate" type="text/html" title="LEGO-NXT解魔方" /><published>2018-08-27T00:00:00+08:00</published><updated>2018-08-27T00:00:00+08:00</updated><id>http://localhost:4000/2018/08/27/nxt-rubik</id><content type="html" xml:base="http://localhost:4000/2018/08/27/nxt-rubik.html">&lt;h1 id=&quot;前言&quot;&gt;前言&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh-Hans"><generator uri="https://jekyllrb.com/" version="3.8.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="zh-Hans" /><updated>2018-12-04T14:02:23+08:00</updated><id>http://localhost:4000/</id><title type="html">Alan Xue’s blog</title><subtitle>Alan Xue's Blog
+</subtitle><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><entry><title type="html">深度学习服务器Docker配置及基本用法</title><link href="http://localhost:4000/2018/12/03/docker.html" rel="alternate" type="text/html" title="深度学习服务器Docker配置及基本用法" /><published>2018-12-03T00:00:00+08:00</published><updated>2018-12-03T00:00:00+08:00</updated><id>http://localhost:4000/2018/12/03/docker</id><content type="html" xml:base="http://localhost:4000/2018/12/03/docker.html">&lt;p&gt;如果你不安装，只是想使用服务器上的Docker，可以直接跳到&lt;a href=&quot;#使用举例keras-gan&quot;&gt;使用举例——Keras-GAN&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h1 id=&quot;安装docker&quot;&gt;安装Docker&lt;/h1&gt;
+
+&lt;p&gt;系统：CentOS 7
+内核要求：3.10以上（可用uname -r命令检查）&lt;/p&gt;
+
+&lt;p&gt;确保yum是最新&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo yum update
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;下载、执行安装脚本&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;!--more--&gt;
+
+&lt;p&gt;启动Docker进程&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo systemctl start docker
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;验证Docker是否安装成功并在容器中执行一个测试的镜像&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo docker run hello-world
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;会输出很多东西，有两行是这样说的：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Hello from Docker!
+This message shows that your installation appears to be working correctly.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这就说明安装没问题了。&lt;/p&gt;
+
+&lt;p&gt;转移数据目录
+Docker的数据目录默认位于&lt;code class=&quot;highlighter-rouge&quot;&gt;/var/lib/docker&lt;/code&gt;，里面会存储着Docker镜像的数据。如果其所在的硬盘分区空间较小，可以将其转移到大的磁盘分区。实验室的机子我看根目录/挂载在一个50G的小硬盘上，/home目录挂载在1.8T大硬盘上，所以将其转移到/home目录下。&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo service docker stop
+mkdir /home/cuda/dockerData(cuda是用户名）
+sudo mv /var/lib/docker /home/cuda/dockerData
+sudo ln -s /home/cuda/dockerData/docker /var/lib/docker
+sudo service docker start
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;安装nvidia-docker&quot;&gt;安装Nvidia-Docker&lt;/h1&gt;
+
+&lt;h2 id=&quot;安装nvidia显卡驱动&quot;&gt;安装Nvidia显卡驱动&lt;/h2&gt;
+&lt;p&gt;在安装Nvidia-Docker前，发现这个服务器居然没有Nvidia显卡驱动。&lt;/p&gt;
+
+&lt;p&gt;装显卡驱动&lt;/p&gt;
+
+&lt;p&gt;在&lt;a href=&quot;https://www.nvidia.com/Download/index.aspx&quot;&gt;官网&lt;/a&gt;搜索对应的驱动下载即可，linux下载到的是&lt;code class=&quot;highlighter-rouge&quot;&gt;.run&lt;/code&gt;文件。（如果你不会的话，可以用pscp命令把它传到服务器）&lt;/p&gt;
+
+&lt;p&gt;运行安装命令&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo sh ***.run
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;安装时会报错：You appear to be running an X server; please exit X before…&lt;/p&gt;
+
+&lt;p&gt;关闭这个X即可，有两种可能，gdm和lightdm&lt;/p&gt;
+
+&lt;p&gt;分别尝试&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo service gdm status
+sudo service lightdm status
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;如果其中一个是能够查到的，就用对应命令关掉&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo service gdm stop
+sudo service lightdm stop
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;之后，又会出错：The Nouveau kernel driver is currently in use by your system…&lt;/p&gt;
+
+&lt;p&gt;这里就是需要关掉这个Nouveau驱动了，需要两步&lt;/p&gt;
+
+&lt;p&gt;(1)把驱动加入黑名单
+编辑/etc/modprobe.d/blacklist.conf，在文件后面加入blacklist nouveau&lt;/p&gt;
+
+&lt;p&gt;(2)root权限运行如下命令
+sudo mv /boot/initramfs-$(uname -r).img /boot/initramfs-$(uname -r).img.bak
+sudo dracut -v /boot/initramfs-$(uname -r).img $(uname -r)&lt;/p&gt;
+
+&lt;p&gt;以上两条命令分别是备份与重建initramfs（这里我看不懂，但是这两条如果不运行的话是不会成功的）&lt;/p&gt;
+
+&lt;h2 id=&quot;真的开始安装nvidia-docker&quot;&gt;真的开始安装Nvidia-Docker&lt;/h2&gt;
+&lt;p&gt;根据官方教程，先要添加RHEL-based distributions（注意这里只针对CentOS 7，其他系统可能有区别）&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo | \
+  sudo tee /etc/yum.repos.d/nvidia-docker.repo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;安装&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo yum install nvidia-docker2
+sudo pkill -SIGHUP dockerd
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;至此安装结束，再次打开docker服务&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo service docker start
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;然后检验是否安装成功&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo docker run --runtime=nvidia --rm nvidia/cuda nvidia-smi
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;在一通下载解压之后，最终输出显卡信息，就是类似&lt;code class=&quot;highlighter-rouge&quot;&gt;nvidia-smi&lt;/code&gt;命令的结果，就说明安装成功。&lt;/p&gt;
+
+&lt;h2 id=&quot;验证容器能否运行tensorflow&quot;&gt;验证容器能否运行TensorFlow&lt;/h2&gt;
+
+&lt;p&gt;CPU版&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo docker run -it --rm tensorflow/tensorflow \
+    python -c &quot;import tensorflow as tf; print(tf.__version__)&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;最终输出tensorflow的版本：1.12.0（可能更高）就说明运行成功&lt;/p&gt;
+
+&lt;p&gt;GPU版&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo docker run --runtime=nvidia -it --rm tensorflow/tensorflow:latest-gpu \
+    python -c &quot;import tensorflow as tf; print(tf.contrib.eager.num_gpus())&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;看看里面的输出，没有报错信息就没什么问题了。&lt;/p&gt;
+
+&lt;h1 id=&quot;使用举例keras-gan&quot;&gt;使用举例——Keras-GAN&lt;/h1&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/eriklindernoren/Keras-GAN&quot;&gt;Keras-GAN&lt;/a&gt;是一个使用Keras框架来实现各个论文里的GAN的github项目。&lt;/p&gt;
+
+&lt;p&gt;将Keras-GAN从github上clone到服务器上（任意目录），然后开始配环境。&lt;/p&gt;
+
+&lt;p&gt;首先，在&lt;a href=&quot;https://hub.docker.com/&quot;&gt;Docker Hub&lt;/a&gt;上pull一个keras的镜像，这里使用了tag：2.1.4-py3-tf-gpu，因为Keras-GAN要求python3，另外这次希望运行gpu版的tensorflow。（如果你在使用的时候找不到恰好的，可以挑个更底层的，比如直接pull一个ubuntu，然后自己配里面的环境）&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo docker pull gw000/keras:2.1.4-py3-tf-gpu
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Docker Hub is a cloud-based registry service which allows you to link to code repositories, build your images and test them, stores manually pushed images, and links to Docker Cloud so you can deploy images to your hosts. It provides a centralized resource for container image discovery, distribution and change management, user and team collaboration, and workflow automation throughout the development pipeline.
+可以简单理解为：我们可以直接从Docker Hub上pull各种各样别人配好的环境（镜像）到本地&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;接下来，使用&lt;code class=&quot;highlighter-rouge&quot;&gt;keras run&lt;/code&gt;来运行&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo docker run -it -v $(pwd)/Keras-GAN:/src/Keras-GAN -w /src gw000/keras:2.1.4-py3-tf-gpu
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;说明一下这个命令：&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt; &lt;/th&gt;
+      &lt;th&gt; &lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;-i&lt;/td&gt;
+      &lt;td&gt;以交互模式运行容器，通常与 -t 同时使用&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;-t&lt;/td&gt;
+      &lt;td&gt;为容器重新分配一个伪输入终端，通常与 -i 同时使用&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;-it&lt;/td&gt;
+      &lt;td&gt;等价于 -i -t&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;-v&lt;/td&gt;
+      &lt;td&gt;将主机中当前目录下的Keras-GAN挂载到容器的/src/Keras-GAN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;-w&lt;/td&gt;
+      &lt;td&gt;指定容器的/src目录为工作目录&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;如果运行成功，那么端口的命令行开头应该变成如下形式&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;root@ID:/src（例如root@0308dc20a66b:/src)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;之后在这里面进行常规的操作，先安装requirement&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cd Keras-GAN/
+pip3 install -r requirements.txt
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;而后，可以随便跑一种模型，我就直接选择了最基础的&lt;a href=&quot;https://github.com/eriklindernoren/Keras-GAN#gan&quot;&gt;GAN&lt;/a&gt;来跑。&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cd gan/
+python3 gan.py
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;第一次运行时还出现在数据下载失败的问题，不清楚这是偶然现象还是固有问题，我进python终端手写了那两行代码，数据下载没出错。具体如下：&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ python3（进python的命令行）
+&amp;gt;&amp;gt;&amp;gt; from keras.datasets import mnist
+&amp;gt;&amp;gt;&amp;gt; mnist.load_data() 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;之后再运行gan，就成功了。下面是保存的最后一张图像（第29800次迭代）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/docker-1.png&quot; alt=&quot;docker-1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;至此，就可以exit退出虚拟终端了。但这个容器还是保留着的。&lt;/p&gt;
+
+&lt;p&gt;这个容器可以有几种选择：
+如果以后用不到了，直接把容器删掉即可
+如果以后还需要用，可以保留，之后用下面的命令进入&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo docker start eafd9111ada6                # 启动容器
+sudo docker exec -it eafd9111ada6  /bin/bash  # 进入容器
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;如果这个环境比较好，想要保留，以后用到别的项目，可以用commit命令创建镜像。具体参考&lt;a href=&quot;http://www.runoob.com/w3cnote/docker-use-container-create-image.html&quot;&gt;Docker 使用容器来创建镜像&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;删除镜像容器&quot;&gt;删除镜像、容器&lt;/h1&gt;
+
+&lt;p&gt;注意顺序，删除一个镜像前，先删除由它建立的容器。&lt;/p&gt;
+
+&lt;p&gt;检查所有容器&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo docker ps -a
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;看到想删除的容器后，删除&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo docker rm ***(CONTAINER ID)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;在对应容器都删除后，查看镜像&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo docker images
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;然后依然是根据ID来进行删除，但注意这次不是&lt;code class=&quot;highlighter-rouge&quot;&gt;rm&lt;/code&gt;，而是&lt;code class=&quot;highlighter-rouge&quot;&gt;rmi&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo docker rmi ***(IMAGE ID)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><category term="Linux" /><category term="Docker" /><category term="机器学习" /><category term="配环境" /><summary type="html">如果你不安装，只是想使用服务器上的Docker，可以直接跳到使用举例——Keras-GAN。 安装Docker 系统：CentOS 7 内核要求：3.10以上（可用uname -r命令检查） 确保yum是最新 sudo yum update 下载、执行安装脚本 curl -fsSL https://get.docker.com -o get-docker.sh sudo sh get-docker.sh</summary></entry><entry><title type="html">LEGO-NXT解魔方</title><link href="http://localhost:4000/2018/08/27/nxt-rubik.html" rel="alternate" type="text/html" title="LEGO-NXT解魔方" /><published>2018-08-27T00:00:00+08:00</published><updated>2018-08-27T00:00:00+08:00</updated><id>http://localhost:4000/2018/08/27/nxt-rubik</id><content type="html" xml:base="http://localhost:4000/2018/08/27/nxt-rubik.html">&lt;h1 id=&quot;前言&quot;&gt;前言&lt;/h1&gt;
 
 &lt;p&gt;很久以前就知道LEGO-NXT可以解魔方，但网上最经典的解决方法需要用到RGB模块，这个模块在机器人套装中没有，单独购买还挺贵。除此之外，也能见到有些人用手机来识别魔方的颜色，但由于自己当时编程能力有限，也就没有去做。&lt;/p&gt;
 
@@ -1258,240 +1477,4 @@ key: 2018-06-06-new-template
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/dbscan.png&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;但在高维数据上，使用欧氏距离计算密度的DBSCAN的效果就不是很好了，甚至可以说非常不好，例如我用的iris数据，如果将四个属性全用上，则不管怎么调整参数，都无法大致将数据分成三类，虽然四维图像无法显示，但从输出来看，结果跟上图是差不多了，有两类无法分开。&lt;/p&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><category term="机器学习" /><category term="C++" /><summary type="html">参加了老师的一个项目，要搞劣质数据对机器学习算法的影响，我负责实现DBSCAN算法。</summary></entry><entry><title type="html">汇编实现汉诺塔</title><link href="http://localhost:4000/2016/10/22/masm2.html" rel="alternate" type="text/html" title="汇编实现汉诺塔" /><published>2016-10-22T00:00:00+08:00</published><updated>2016-10-22T00:00:00+08:00</updated><id>http://localhost:4000/2016/10/22/masm2</id><content type="html" xml:base="http://localhost:4000/2016/10/22/masm2.html">&lt;p&gt;通常学一门新语言，都是先写一个汉诺塔熟悉这种语言的函数时如何构造的。&lt;/p&gt;
-
-&lt;p&gt;但汇编学了很久都没有学到过程，所以初次尝试只是写了个冒泡排序。&lt;/p&gt;
-
-&lt;p&gt;上节课老师终于讲了一下如何写PROC，CALL，在试了几个简单的类似两个整数相加这样的函数之后，果断开始尝试用汇编写汉诺塔。&lt;/p&gt;
-
-&lt;!--more--&gt;
-
-&lt;div class=&quot;divider&quot;&gt;&lt;/div&gt;
-
-&lt;h1 id=&quot;思路&quot;&gt;思路&lt;/h1&gt;
-
-&lt;p&gt;思路就是普通的C语言中递归实现汉诺塔，只需要写出递归函数即可&lt;/p&gt;
-
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//han函数能够将A柱子最上面的k个盘子借助B移动到C&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;han&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
-	&lt;span class=&quot;c1&quot;&gt;//如果只需要移动一次，直接移动即可&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;k&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
-	&lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;%c -&amp;gt; %c&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-	&lt;span class=&quot;c1&quot;&gt;//先将k-1个盘子借助C移动到B&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;han&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-	&lt;span class=&quot;c1&quot;&gt;//将剩下的一个移动到C&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;%c -&amp;gt; %c&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-	&lt;span class=&quot;c1&quot;&gt;//将刚才移动到B的k-1个盘子借助A移动到C&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;han&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h1 id=&quot;汇编实现&quot;&gt;汇编实现&lt;/h1&gt;
-
-&lt;p&gt;选择了EAX来存储k，其实挺麻烦的，因为c语言的函数printf回改变EAX，还需要push&lt;/p&gt;
-
-&lt;p&gt;主要说一下栈相关的内容&lt;/p&gt;
-
-&lt;p&gt;比如说第一次调用为&lt;code class=&quot;highlighter-rouge&quot;&gt;han('A', 'B', 'C', 3)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;汇编写法&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;PUSH 	3
-PUSH 	'C'
-PUSH 	'B'
-PUSH 	'A'
-CALL 	HAN
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;此时栈中内容为&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;地址&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;含义&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;内容&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;···&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;···&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;···&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;返回值&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;-&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP+4&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;A&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;41 00 00 00&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP+8&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;B&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;42 00 00 00&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP+12&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;C&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;43 00 00 00&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP+16&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;03 00 00 00&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;···&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;···&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;···&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;为了避免递归调用时改变EAX的值，所以需要&lt;code class=&quot;highlighter-rouge&quot;&gt;PUSH EAX&lt;/code&gt;，而&lt;code class=&quot;highlighter-rouge&quot;&gt;PUSH EBP&lt;/code&gt;的原因不记得官方说法了，我知道的好处是这样写在调用参数的时候地址偏移是常数，算得快。&lt;/p&gt;
-
-&lt;p&gt;这时栈中内容变为&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;地址&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;含义&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;内容&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;···&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;···&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;···&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;上一个EBP&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;-&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP+4&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;上一个EAX&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;-&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP+8&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;返回值&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;-&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP+12&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;A&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;41 00 00 00&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP+16&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;B&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;42 00 00 00&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP+20&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;C&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;43 00 00 00&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;ESP+24&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;03 00 00 00&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;···&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;···&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;···&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;此时&lt;code class=&quot;highlighter-rouge&quot;&gt;MOV 	EBP,ESP&lt;/code&gt;，这样在之后代码中，如果需要用到A、B、C、k，就可以直接写&lt;code class=&quot;highlighter-rouge&quot;&gt;[EBP+12]&lt;/code&gt;一类的了。&lt;/p&gt;
-
-&lt;p&gt;关键就是需要理解汇编的过程（函数）时怎么个运行方式，之后写起来感觉跟c语言没什么区别，需要提醒一下C语言函数会改变EAX,ECX,EDX，而han过程中用到了EAX，所以在调用printf之前一定要&lt;code class=&quot;highlighter-rouge&quot;&gt;PUSH EAX&lt;/code&gt;。&lt;/p&gt;
-
-&lt;h1 id=&quot;代码&quot;&gt;代码&lt;/h1&gt;
-
-&lt;p&gt;ASM32.INC&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;.386
-.MODEL FLAT, STDCALL
-.STACK 1024
-
-OPTION casemap : none
-
-INCLUDELIB &quot;D:\...\MSVCRT.LIB&quot;;需要换成自己的地址
-
-chr$ MACRO any_text : VARARG
-LOCAL txtname
-.data
-txtname db any_text, 0
-align 4
-.code
-EXITM &amp;lt;OFFSET txtname&amp;gt;
-ENDM
-
-printf		PROTO C : DWORD, : VARARG
-scanf		PROTO C : DWORD, : VARARG
-getchar		PROTO C
-ExitProcess PROTO : DWORD
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;*.asm&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;INCLUDE	ASM32.INC
-
-.CODE
-HAN PROC
-	PUSH	EAX
-	PUSH	EBP
-	MOV		EBP,ESP
-
-	MOV		EAX,[EBP+24]
-	DEC		EAX
-	JNZ		CO
-	PUSH	EAX
-	INVOKE	printf,chr$(&quot;%c -&amp;gt; %c&quot;, 0DH, 0AH), DWORD PTR [EBP+12], DWORD PTR [EBP+20]
-	POP		EAX
-	JMP		EN
-CO:	PUSH	EAX
-	PUSH	[EBP+16]
-	PUSH	[EBP+20]
-	PUSH	[EBP+12]
-	CALL	HAN
-	PUSH	EAX
-	INVOKE	printf, chr$(&quot;%c -&amp;gt; %c&quot;, 0DH, 0AH), DWORD PTR[EBP+12], DWORD PTR[EBP+20]
-	POP		EAX
-	PUSH	EAX
-	PUSH[EBP + 20]
-	PUSH[EBP + 12]
-	PUSH[EBP + 16]
-	CALL	HAN
-
-EN:	POP		EBP
-	POP		EAX
-	RET		16
-HAN ENDP
-
-MAIN PROC
-	PUSH	3
-	PUSH	'C'
-	PUSH	'B'
-	PUSH	'A'
-	CALL	HAN
-
-	INVOKE  ExitProcess, 0
-	MAIN ENDP
-	END MAIN
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><category term="汇编" /><summary type="html">通常学一门新语言，都是先写一个汉诺塔熟悉这种语言的函数时如何构造的。 但汇编学了很久都没有学到过程，所以初次尝试只是写了个冒泡排序。 上节课老师终于讲了一下如何写PROC，CALL，在试了几个简单的类似两个整数相加这样的函数之后，果断开始尝试用汇编写汉诺塔。</summary></entry></feed>
+&lt;p&gt;但在高维数据上，使用欧氏距离计算密度的DBSCAN的效果就不是很好了，甚至可以说非常不好，例如我用的iris数据，如果将四个属性全用上，则不管怎么调整参数，都无法大致将数据分成三类，虽然四维图像无法显示，但从输出来看，结果跟上图是差不多了，有两类无法分开。&lt;/p&gt;</content><author><name>Alan Xue</name><email>xuezhonghao1997@gmail.com</email></author><category term="机器学习" /><category term="C++" /><summary type="html">参加了老师的一个项目，要搞劣质数据对机器学习算法的影响，我负责实现DBSCAN算法。</summary></entry></feed>

@@ -1,0 +1,227 @@
+---
+layout: article
+title: 深度学习服务器Docker配置及基本用法
+mathjax: true
+tags: Linux Docker 机器学习 配环境
+key: 2018-12-03-docker
+---
+
+如果你不安装，只是想使用服务器上的Docker，可以直接跳到[使用举例——Keras-GAN](#使用举例keras-gan)。
+
+# 安装Docker
+
+系统：CentOS 7
+内核要求：3.10以上（可用uname -r命令检查）
+
+确保yum是最新
+```
+sudo yum update
+```
+
+下载、执行安装脚本
+```
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+```
+
+<!--more-->
+
+启动Docker进程
+```
+sudo systemctl start docker
+```
+
+验证Docker是否安装成功并在容器中执行一个测试的镜像
+```
+sudo docker run hello-world
+```
+会输出很多东西，有两行是这样说的：
+
+> Hello from Docker!
+> This message shows that your installation appears to be working correctly.
+
+这就说明安装没问题了。
+
+转移数据目录
+Docker的数据目录默认位于```/var/lib/docker```，里面会存储着Docker镜像的数据。如果其所在的硬盘分区空间较小，可以将其转移到大的磁盘分区。实验室的机子我看根目录/挂载在一个50G的小硬盘上，/home目录挂载在1.8T大硬盘上，所以将其转移到/home目录下。
+```
+sudo service docker stop
+mkdir /home/cuda/dockerData(cuda是用户名）
+sudo mv /var/lib/docker /home/cuda/dockerData
+sudo ln -s /home/cuda/dockerData/docker /var/lib/docker
+sudo service docker start
+```
+
+# 安装Nvidia-Docker
+
+## 安装Nvidia显卡驱动
+在安装Nvidia-Docker前，发现这个服务器居然没有Nvidia显卡驱动。
+
+装显卡驱动
+
+在[官网](https://www.nvidia.com/Download/index.aspx)搜索对应的驱动下载即可，linux下载到的是```.run```文件。（如果你不会的话，可以用pscp命令把它传到服务器）
+
+运行安装命令
+```
+sudo sh ***.run
+```
+
+安装时会报错：You appear to be running an X server; please exit X before...
+
+关闭这个X即可，有两种可能，gdm和lightdm
+
+分别尝试
+```
+sudo service gdm status
+sudo service lightdm status
+```
+如果其中一个是能够查到的，就用对应命令关掉
+```
+sudo service gdm stop
+sudo service lightdm stop
+```
+
+之后，又会出错：The Nouveau kernel driver is currently in use by your system...
+
+这里就是需要关掉这个Nouveau驱动了，需要两步
+
+(1)把驱动加入黑名单
+编辑/etc/modprobe.d/blacklist.conf，在文件后面加入blacklist nouveau
+
+(2)root权限运行如下命令
+sudo mv /boot/initramfs-$(uname -r).img /boot/initramfs-$(uname -r).img.bak
+sudo dracut -v /boot/initramfs-$(uname -r).img $(uname -r)
+
+以上两条命令分别是备份与重建initramfs（这里我看不懂，但是这两条如果不运行的话是不会成功的）
+
+## 真的开始安装Nvidia-Docker
+根据官方教程，先要添加RHEL-based distributions（注意这里只针对CentOS 7，其他系统可能有区别）
+```
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.repo | \
+  sudo tee /etc/yum.repos.d/nvidia-docker.repo
+```
+安装
+```
+sudo yum install nvidia-docker2
+sudo pkill -SIGHUP dockerd
+```
+
+至此安装结束，再次打开docker服务
+```
+sudo service docker start
+```
+
+然后检验是否安装成功
+```
+sudo docker run --runtime=nvidia --rm nvidia/cuda nvidia-smi
+```
+在一通下载解压之后，最终输出显卡信息，就是类似```nvidia-smi```命令的结果，就说明安装成功。 
+
+## 验证容器能否运行TensorFlow
+
+CPU版
+```
+sudo docker run -it --rm tensorflow/tensorflow \
+    python -c "import tensorflow as tf; print(tf.__version__)"
+```
+最终输出tensorflow的版本：1.12.0（可能更高）就说明运行成功
+
+GPU版
+```
+sudo docker run --runtime=nvidia -it --rm tensorflow/tensorflow:latest-gpu \
+    python -c "import tensorflow as tf; print(tf.contrib.eager.num_gpus())"
+```
+
+看看里面的输出，没有报错信息就没什么问题了。
+
+# 使用举例——Keras-GAN
+
+[Keras-GAN](https://github.com/eriklindernoren/Keras-GAN)是一个使用Keras框架来实现各个论文里的GAN的github项目。
+
+将Keras-GAN从github上clone到服务器上（任意目录），然后开始配环境。
+
+首先，在[Docker Hub](https://hub.docker.com/)上pull一个keras的镜像，这里使用了tag：2.1.4-py3-tf-gpu，因为Keras-GAN要求python3，另外这次希望运行gpu版的tensorflow。（如果你在使用的时候找不到恰好的，可以挑个更底层的，比如直接pull一个ubuntu，然后自己配里面的环境）
+
+```
+sudo docker pull gw000/keras:2.1.4-py3-tf-gpu
+```
+
+> Docker Hub is a cloud-based registry service which allows you to link to code repositories, build your images and test them, stores manually pushed images, and links to Docker Cloud so you can deploy images to your hosts. It provides a centralized resource for container image discovery, distribution and change management, user and team collaboration, and workflow automation throughout the development pipeline.
+> 可以简单理解为：我们可以直接从Docker Hub上pull各种各样别人配好的环境（镜像）到本地
+
+接下来，使用```keras run```来运行
+```
+sudo docker run -it -v $(pwd)/Keras-GAN:/src/Keras-GAN -w /src gw000/keras:2.1.4-py3-tf-gpu
+```
+
+说明一下这个命令：
+
+|||
+|:-|-|
+|-i|以交互模式运行容器，通常与 -t 同时使用|
+|-t|为容器重新分配一个伪输入终端，通常与 -i 同时使用|
+|-it|等价于 -i -t|
+|-v|将主机中当前目录下的Keras-GAN挂载到容器的/src/Keras-GAN|
+|-w|指定容器的/src目录为工作目录
+
+如果运行成功，那么端口的命令行开头应该变成如下形式
+```
+root@ID:/src（例如root@0308dc20a66b:/src)
+```
+
+之后在这里面进行常规的操作，先安装requirement
+```
+cd Keras-GAN/
+pip3 install -r requirements.txt
+```
+
+而后，可以随便跑一种模型，我就直接选择了最基础的[GAN](https://github.com/eriklindernoren/Keras-GAN#gan)来跑。
+```
+cd gan/
+python3 gan.py
+```
+第一次运行时还出现在数据下载失败的问题，不清楚这是偶然现象还是固有问题，我进python终端手写了那两行代码，数据下载没出错。具体如下：
+```
+$ python3（进python的命令行）
+>>> from keras.datasets import mnist
+>>> mnist.load_data() 
+```
+
+之后再运行gan，就成功了。下面是保存的最后一张图像（第29800次迭代）
+
+![docker-1](/assets/images/docker-1.png)
+
+至此，就可以exit退出虚拟终端了。但这个容器还是保留着的。
+
+这个容器可以有几种选择：
+如果以后用不到了，直接把容器删掉即可
+如果以后还需要用，可以保留，之后用下面的命令进入
+```
+sudo docker start eafd9111ada6                # 启动容器
+sudo docker exec -it eafd9111ada6  /bin/bash  # 进入容器
+```
+如果这个环境比较好，想要保留，以后用到别的项目，可以用commit命令创建镜像。具体参考[Docker 使用容器来创建镜像](http://www.runoob.com/w3cnote/docker-use-container-create-image.html)
+
+
+# 删除镜像、容器
+
+注意顺序，删除一个镜像前，先删除由它建立的容器。
+
+检查所有容器
+```
+sudo docker ps -a
+```
+看到想删除的容器后，删除
+```
+sudo docker rm ***(CONTAINER ID)
+```
+
+在对应容器都删除后，查看镜像
+```
+sudo docker images
+```
+然后依然是根据ID来进行删除，但注意这次不是```rm```，而是```rmi```
+```
+sudo docker rmi ***(IMAGE ID)
+```
